@@ -9,6 +9,9 @@
     ap = &x;
     pp = &d;
 
+    Once initializing the values we find that the pointers now contain values equal 
+    to the address locations of the local variables that they were assigned to. 
+
 5. You could theoretically point a pointer to itself like this.
     
     void* p = &p; 

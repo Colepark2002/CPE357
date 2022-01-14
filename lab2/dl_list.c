@@ -9,7 +9,7 @@ typedef struct Node
     char text[1000];
 }Node;
 
-
+int size = 0;
 Node* head = NULL;
 
 void add(Node* new)
@@ -19,6 +19,7 @@ void add(Node* new)
         head = new;
         new->next = head;
         new->prev = head;
+        size += 1;
         return;
     }
     Node* temp = head;
@@ -27,12 +28,13 @@ void add(Node* new)
     temp->next = new;
     new->next = head;
     head->prev = new;
+    size += 1;
     return;
 }
 
 int removeItem(int index)
 {
-    if(head == NULL)
+    if(head == NULL || size == 0)
     {
         printf("Cannot Remove from empty List\n");
         return 0;
@@ -52,17 +54,18 @@ int removeItem(int index)
     temp->prev->next = temp->next; 
     if(temp == head)
         head = temp->next;
-    if(head->next == head)
+    if(size == 1)
         head = NULL;
     temp->next = NULL;
     temp->prev = NULL;
     
     free(temp);
+    size -= 1;
     return 0;
 }
 void printList()
 {
-    if(head == NULL)
+    if(size == 0)
     {
         printf("Cannot Print An Empty List\n");
         return;
@@ -109,12 +112,16 @@ void startScreen()
 }
 void freeList()
 {
+    if(size == 0)
+        return;
     Node *temp = head; 
     while(temp->next != head)
     {
+        if(size == 0)
+            return;
         removeItem(1);
     }
-    free(head);
+    removeItem(1);
     return;
 }
 int main()

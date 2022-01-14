@@ -53,9 +53,16 @@ int removeItem(int index)
     temp->next->prev = temp->prev;
     temp->prev->next = temp->next; 
     if(temp == head)
+    {
         head = temp->next;
+    }
+    if(head->next == head)
+    {
+        head = NULL;
+    }
     temp->next = NULL;
     temp->prev = NULL;
+    
     free(temp);
     return 0;
 }
@@ -92,16 +99,19 @@ void pushString()
 }
 void deleteItem()
 {
-    int index;
+    int index = 0;
     printf("insert list index\n");
-    scanf("&d", &index);
+    scanf("%d", &index);
     removeItem(index);
     printf("done delete item\n");
     return;
 }
 void startScreen()
 {
-    printf("\n1 push string\n2 print list\n3 delete item\n4 end program\n");
+    printf("\n1 push string\n");
+    printf("2 print list\n");
+    printf("3 delete item\n");
+    printf("4 end program\n");
 }
 void freeList()
 {
@@ -118,6 +128,7 @@ int main()
     int input = 0;
     while(1)
     {
+        input = 0;
         startScreen();
         scanf("%d", &input);
         if(input == 1)
@@ -140,6 +151,7 @@ int main()
         else
         {
             printf("Invalid Input\n");
+            exit(EXIT_FAILURE);
         }
     } 
     return 0;

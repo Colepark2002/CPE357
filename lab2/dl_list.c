@@ -15,6 +15,8 @@ void add(Node* new)
     if(head == NULL)
     {
         head = new;
+        new->next = head;
+        new->prev = head;
         return;
     }
     Node* temp = head;
@@ -72,6 +74,28 @@ void printList()
     return;
 }
 
+void pushString()
+{
+    Node* new = (Node*)malloc(sizeof(Node));
+    if(new == NULL)
+    {
+        printf("Error Creating Node\n");
+        return;
+    }
+    printf("insert text\n");
+    scanf("%s", &new->text);
+    add(new);
+    printf("done push string\n");
+    return;
+}
+void deleteItem()
+{
+    int index;
+    printf("insert list index\n");
+    scanf("&d", &index);
+    remove(index);
+    return;
+}
 int main()
 {
     return 0; 

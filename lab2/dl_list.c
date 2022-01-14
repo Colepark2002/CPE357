@@ -1,12 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct
+typedef struct LinkedList Node;
+typedef struct LinkedList
 {
-    Node* next;
-    Node* prev;
+    Node *next;
+    Node *prev;
     char text[1000];
-}Node;
+};
+
 
 Node* head = NULL;
 
@@ -30,12 +32,12 @@ void add(Node* new)
     return;
 }
 
-void remove(int index)
+int removeItem(int index)
 {
     if(head == NULL)
     {
         printf("Cannot Remove from empty List\n");
-        return;
+        return 0;
     }
     Node* temp = head; 
 
@@ -44,7 +46,7 @@ void remove(int index)
         if(temp->next = head)
         {
             printf("Index out of bounds on remove\n");
-            return;
+            return 0;
         }
         temp = temp->next;
     }
@@ -55,7 +57,7 @@ void remove(int index)
     temp->next = NULL;
     temp->prev = NULL;
     free(temp);
-    return;
+    return 0;
 }
 void printList()
 {
@@ -93,10 +95,52 @@ void deleteItem()
     int index;
     printf("insert list index\n");
     scanf("&d", &index);
-    remove(index);
+    removeItem(index);
+    printf("done delete item\n");
+    return;
+}
+void startScreen()
+{
+    printf("\n1 push string\n2 print list\n3 delete item\n4 end program\n");
+}
+void freeList()
+{
+    Node *temp = head; 
+    while(temp->next != head)
+    {
+        removeItem(1);
+    }
+    free(head);
     return;
 }
 int main()
 {
-    return 0; 
+    int input = 0;
+    while(1)
+    {
+        startScreen();
+        scanf("%d", &input);
+        if(input == 1)
+        {
+            pushString();
+        }
+        else if(input == 2)
+        {
+            printList();
+        }
+        else if(input == 3)
+        {
+            deleteItem();
+        }
+        else if(input == 4)
+        {
+            freeList();
+            return 0;
+        }
+        else
+        {
+            printf("Invalid Input\n");
+        }
+    } 
+    return 0;
 }

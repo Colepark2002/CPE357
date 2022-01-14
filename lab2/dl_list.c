@@ -3,7 +3,7 @@
 
 typedef struct
 {
-    Node* next; 
+    Node* next;
     Node* prev;
     char text[1000];
 }Node;

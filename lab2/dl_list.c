@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct LinkedList Node;
-typedef struct LinkedList
+
+typedef struct Node
 {
-    Node *next;
-    Node *prev;
+    struct Node *next;
+    struct Node *prev;
     char text[1000];
-};
+}Node;
 
 
 Node* head = NULL;

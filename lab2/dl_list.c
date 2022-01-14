@@ -27,6 +27,7 @@ void add(Node* new)
         temp = temp->next;
     temp->next = new;
     new->next = head;
+    new->prev = temp;
     head->prev = new;
     size += 1;
     return;
@@ -34,6 +35,11 @@ void add(Node* new)
 
 int removeItem(int index)
 {
+    if(index < 1)
+        {
+            printf("Index out of bounds on remove\n");
+            return 0;
+        }
     if(head == NULL || size == 0)
     {
         printf("Cannot Remove from empty List\n");
@@ -43,7 +49,7 @@ int removeItem(int index)
 
     for(int i = 1; i < index; i++)
     {
-        if(temp->next = head)
+        if(temp->next == head)
         {
             printf("Index out of bounds on remove\n");
             return 0;

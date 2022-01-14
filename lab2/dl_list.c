@@ -23,9 +23,7 @@ void add(Node* new)
     }
     Node* temp = head;
     while(temp->next != head)
-    {
         temp = temp->next;
-    }
     temp->next = new;
     new->next = head;
     head->prev = new;
@@ -53,13 +51,9 @@ int removeItem(int index)
     temp->next->prev = temp->prev;
     temp->prev->next = temp->next; 
     if(temp == head)
-    {
         head = temp->next;
-    }
     if(head->next == head)
-    {
         head = NULL;
-    }
     temp->next = NULL;
     temp->prev = NULL;
     
@@ -132,17 +126,11 @@ int main()
         startScreen();
         scanf("%d", &input);
         if(input == 1)
-        {
             pushString();
-        }
         else if(input == 2)
-        {
             printList();
-        }
         else if(input == 3)
-        {
             deleteItem();
-        }
         else if(input == 4)
         {
             freeList();

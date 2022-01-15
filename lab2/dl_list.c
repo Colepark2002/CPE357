@@ -94,8 +94,17 @@ void pushString()
         printf("Error Creating Node\n");
         return;
     }
+    int c;
+    int index = 0;
+    char *str = new->text;
     printf("insert text\n");
-    scanf("%s", &new->text);
+    c = getchar();
+    while((c = getchar()) != '\n')
+    {
+        str[index] = c;
+        index++;
+    }
+    str[index+1] = 0;
     add(new);
     printf("done push string\n");
     return;

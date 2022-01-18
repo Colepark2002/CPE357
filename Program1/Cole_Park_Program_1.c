@@ -22,7 +22,7 @@ typedef struct tagBITMAPINFOHEADER
     LONG biHeight;  //species height in pixels 
     WORD biPlanes; //specifies the number of color planes, must be 1 
     WORD biBitCount; //specifies the number of bit per pixel 
-    DWORD biCompression;//spcifies the type of compression 
+    DWORD biCompression;//specifies the type of compression 
     DWORD biSizeImage;  //size of image in bytes 
     LONG biXPelsPerMeter;  //number of pixels per meter in x axis 
     LONG biYPelsPerMeter;  //number of pixels per meter in y axis 
@@ -42,10 +42,45 @@ int main(int argc, char* argv[])
     }
 
     double ratio = atof(argv[3]);
+    if(ratio == 0)
+    {
+        perror("Invalid Ratio Input\n");
+        exit(EXIT_FAILURE);
+    }
 
     FILE *bmp1 = fopen(argv[2], "rb");
     FILE *bmp2 = fopen(argv[3], "rb");
     FILE *outfile = fopen(argv[4], "wb");
- 
+
+    if(bmp1 == NULL|| bmp2 == NULL || outfile == NULL)
+    {
+        perror("Error Opening file\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    tagBITMAPFILEHEADER *bmp1FileHeader = (tagBITMAPFILEHEADER*)malloc(sizeof(tagBITMAPFILEHEADER));
+    tagBITMAPFILEHEADER *bmp2FileHeader = (tagBITMAPFILEHEADER*)malloc(sizeof(tagBITMAPFILEHEADER));
+
+    tagBITMAPINFOHEADER *bmp1InfoHeader = (tagBITMAPINFOHEADER*)malloc(sizeof(tagBITMAPINFOHEADER));
+    tagBITMAPINFOHEADER *bmp2InfoHeader = (tagBITMAPINFOHEADER*)malloc(sizeof(tagBITMAPINFOHEADER));
+
+    if(bmp1FileHeader == NULL|| bmp1InfoHeader == NULL || bmp2FileHeader == NULL || bmp2InfoHeader)
+    {
+        perror("Malloc Error\n");
+        exit(EXIT_FAILURE);
+    }
+
+    byte bmp1ColorInfo;
+    byte bmp2ColorInfo;
+
+    fread(bmp1FileHeader,sizeof(byte),14,bmp1);
+    fread(bmp1InfoHeader,sizeof(byte),40,bmp1);
+
+    fread(bmp2FileHeader,sizeof(byte),14,bmp2);
+    fread(bmp2InfoHeader,sizeof(byte),40,bmp2);
+    
+    // MAKE MASSIVE FOR LOOP TO LOOP THROUGH PIXELS YAYYYYYYYYYYYY
+    
+
     return;
 }

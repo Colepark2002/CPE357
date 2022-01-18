@@ -6,7 +6,6 @@ typedef unsigned short WORD;
 typedef unsigned int DWORD; 
 typedef unsigned int LONG;
 
-
 typedef struct tagBITMAPFILEHEADER 
 { 
     WORD bfType;  //specifies the file type 

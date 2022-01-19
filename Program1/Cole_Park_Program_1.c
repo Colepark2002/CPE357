@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 
     
 
-    if(argc != 5) // incorrect input check
+    if(argc != 5) // incorrect input check.
     {
         perror("Usage: ./[programName] [imagefile1] [imagefile2] [ratio] [outputfile]\n");
         exit(EXIT_FAILURE);
@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
     FILE *bmp2 = fopen(argv[2], "rb");
     FILE *outfile = fopen(argv[4], "wb");
 
-    if(bmp1 == NULL|| bmp2 == NULL || outfile == NULL) // checks for file errors
+    if(bmp1 == NULL|| bmp2 == NULL || outfile == NULL) // checks for file errors.
     {
         perror("Error Opening file\n");
         exit(EXIT_FAILURE);
@@ -66,7 +66,7 @@ int main(int argc, char* argv[])
     tagBITMAPINFOHEADER *bmp1InfoHeader = (tagBITMAPINFOHEADER*)malloc(sizeof(tagBITMAPINFOHEADER));
     tagBITMAPINFOHEADER *bmp2InfoHeader = (tagBITMAPINFOHEADER*)malloc(sizeof(tagBITMAPINFOHEADER));
 
-    if(bmp1FileHeader == NULL) // check for malloc errors
+    if(bmp1FileHeader == NULL) // check for malloc errors.
     {
         perror("Malloc Error for bmp1FileHeader\n");
         exit(EXIT_FAILURE);
@@ -91,10 +91,10 @@ int main(int argc, char* argv[])
     byte bmp2ColorInfo;
     byte resultColor;
 
-    fread(bmp1FileHeader,sizeof(byte),14,bmp1); // reads in the headers for first file
+    fread(bmp1FileHeader,sizeof(byte),14,bmp1); // reads in the headers for first file.
     fread(bmp1InfoHeader,sizeof(byte),40,bmp1);
 
-    fread(bmp2FileHeader,sizeof(byte),14,bmp2); // reads in the headers for second file
+    fread(bmp2FileHeader,sizeof(byte),14,bmp2); // reads in the headers for second file.
     fread(bmp2InfoHeader,sizeof(byte),40,bmp2);
 
     if(bmp1InfoHeader->biHeight != bmp2InfoHeader->biHeight || bmp1InfoHeader->biWidth != bmp2InfoHeader->biWidth)
@@ -106,8 +106,8 @@ int main(int argc, char* argv[])
     int paddedBytes = (bmp1InfoHeader->biWidth * 3) % 4;
     byte padding = 0;
 
-    fwrite(bmp1FileHeader, sizeof(byte), 14, outfile); // writes the file header
-    fwrite(bmp2InfoHeader, sizeof(byte), 40, outfile); // writes the info header
+    fwrite(bmp1FileHeader, sizeof(byte), 14, outfile); // writes the file header.
+    fwrite(bmp2InfoHeader, sizeof(byte), 40, outfile); // writes the info header.
     
     // MAKE MASSIVE FOR LOOP TO LOOP THROUGH PIXELS YAYYYYYYYYYYYY
     for(int y = 0; y < bmp1InfoHeader->biHeight; y++) // loops through pixel height amount of times.
@@ -120,18 +120,22 @@ int main(int argc, char* argv[])
             fwrite(&resultColor, sizeof(byte), 1, outfile); // writes new color to the file.
         }
         
-        fread(NULL, sizeof(byte), paddedBytes, bmp1); // skips the padded bytes
-        fread(NULL, sizeof(byte), paddedBytes, bmp2); // skips the padded bytes
+        fread(NULL, sizeof(byte), paddedBytes, bmp1); // skips the padded bytes.
+        fread(NULL, sizeof(byte), paddedBytes, bmp2); // skips the padded bytes.
         
         for(int i = 0; i < paddedBytes; i++) // writes the padded bytes to the outfile.
         {
             fwrite(&padding, sizeof(byte), 1, outfile);
         }
     }
-    free(bmp1FileHeader); // free final information
+    free(bmp1FileHeader); // free final information.
     free(bmp1InfoHeader);
     free(bmp2FileHeader);
     free(bmp2InfoHeader);
+    
+    fclose(bmp1); // closing my files.
+    fclose(bmp2);
+    fclose(outfile);
     
     return 0;
 }

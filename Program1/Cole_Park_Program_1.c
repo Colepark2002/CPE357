@@ -90,6 +90,9 @@ int main(int argc, char* argv[])
 
     int paddedBytes = (bmp1InfoHeader->biWidth * 3) % 4;
     byte padding = 0;
+
+    fwrite(bmp1FileHeader, sizeof(byte), 14, outfile);
+    fwrite(bmp2InfoHeader, sizeof(byte), 40, outfile);
     
     // MAKE MASSIVE FOR LOOP TO LOOP THROUGH PIXELS YAYYYYYYYYYYYY
     for(int y = 0; y < bmp1InfoHeader->biHeight; y++)

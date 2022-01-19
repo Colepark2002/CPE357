@@ -31,10 +31,6 @@ typedef struct tagBITMAPINFOHEADER
 }tagBITMAPINFOHEADER;
 
 
-void getColor(byte *bmp1ColorInfo, byte *bmp2ColorInfo, FILE *bmp1, FILE *bmp2, FILE *outfile)
-{
-    return;
-}
 
 int main(int argc, char* argv[])
 {
@@ -76,8 +72,9 @@ int main(int argc, char* argv[])
         exit(EXIT_FAILURE);
     }
 
-    byte *bmp1ColorInfo;
-    byte *bmp2ColorInfo;
+    byte bmp1ColorInfo;
+    byte bmp2ColorInfo;
+    byte resultColor;
 
     fread(bmp1FileHeader,sizeof(byte),14,bmp1);
     fread(bmp1InfoHeader,sizeof(byte),40,bmp1);
@@ -92,8 +89,27 @@ int main(int argc, char* argv[])
     }
 
     int paddedBytes = (bmp1InfoHeader->biWidth * 3) % 4;
+    byte padding = 0;
     
     // MAKE MASSIVE FOR LOOP TO LOOP THROUGH PIXELS YAYYYYYYYYYYYY
+    for(int y = 0; y < bmp1InfoHeader->biHeight; y++)
+    {
+        for(int x = 0; x < ((bmp1InfoHeader->biWidth * 3) - paddedBytes); x++) 
+        {
+            fread(&bmp1ColorInfo, sizeof(byte), 1, bmp1);
+            fread(&bmp2ColorInfo, sizeof(byte), 1, bmp2);
+            resultColor = (bmp1ColorInfo * ratio) + (bmp2ColorInfo * (1-ratio));
+            fwrite(&resultColor, sizeof(byte), 1, outfile);
+        }
+        
+        fread(NULL, sizeof(byte), paddedBytes, bmp1);
+        fread(NULL, sizeof(byte), paddedBytes, bmp2);
+        
+        for(int i = 0; i < paddedBytes; i++)
+        {
+            fwrite(&padding, sizeof(byte), 1, outfile);
+        }
+    }
     
 
     return;

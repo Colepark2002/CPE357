@@ -50,8 +50,8 @@ int main(int argc, char* argv[])
         exit(EXIT_FAILURE);
     }
 
-    FILE *bmp1 = fopen(argv[2], "rb");
-    FILE *bmp2 = fopen(argv[3], "rb");
+    FILE *bmp1 = fopen(argv[1], "rb");
+    FILE *bmp2 = fopen(argv[2], "rb");
     FILE *outfile = fopen(argv[4], "wb");
 
     if(bmp1 == NULL|| bmp2 == NULL || outfile == NULL)
@@ -66,9 +66,24 @@ int main(int argc, char* argv[])
     tagBITMAPINFOHEADER *bmp1InfoHeader = (tagBITMAPINFOHEADER*)malloc(sizeof(tagBITMAPINFOHEADER));
     tagBITMAPINFOHEADER *bmp2InfoHeader = (tagBITMAPINFOHEADER*)malloc(sizeof(tagBITMAPINFOHEADER));
 
-    if(bmp1FileHeader == NULL|| bmp1InfoHeader == NULL || bmp2FileHeader == NULL || bmp2InfoHeader)
+    if(bmp1FileHeader == NULL)
     {
-        perror("Malloc Error\n");
+        perror("Malloc Error for bmp1FileHeader\n");
+        exit(EXIT_FAILURE);
+    }
+    if(bmp1InfoHeader == NULL)
+    {
+        perror("Malloc Error for bmp1InfoHeader\n");
+        exit(EXIT_FAILURE);
+    }
+    if(bmp2FileHeader == NULL)
+    {
+        perror("Malloc Error for bmp2FileHeader\n");
+        exit(EXIT_FAILURE);
+    }
+    if(bmp2InfoHeader == NULL)
+    {
+        perror("Malloc Error for bmp2InfoHeader\n");
         exit(EXIT_FAILURE);
     }
 
@@ -113,6 +128,10 @@ int main(int argc, char* argv[])
             fwrite(&padding, sizeof(byte), 1, outfile);
         }
     }
+    free(bmp1FileHeader);
+    free(bmp1InfoHeader);
+    free(bmp2FileHeader);
+    free(bmp2InfoHeader);
     
-    return;
+    return 0;
 }

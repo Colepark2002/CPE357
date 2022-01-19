@@ -26,9 +26,15 @@ typedef struct tagBITMAPINFOHEADER
     DWORD biSizeImage;  //size of image in bytes 
     LONG biXPelsPerMeter;  //number of pixels per meter in x axis 
     LONG biYPelsPerMeter;  //number of pixels per meter in y axis 
-    DWORD biClrUsed;  //number of colors used by th ebitmap 
+    DWORD biClrUsed;  //number of colors used by the bitmap 
     DWORD biClrImportant;  //number of colors that are important 
 }tagBITMAPINFOHEADER;
+
+
+void getColor(byte *bmp1ColorInfo, byte *bmp2ColorInfo, FILE *bmp1, FILE *bmp2, FILE *outfile)
+{
+    return;
+}
 
 int main(int argc, char* argv[])
 {
@@ -70,14 +76,22 @@ int main(int argc, char* argv[])
         exit(EXIT_FAILURE);
     }
 
-    byte bmp1ColorInfo;
-    byte bmp2ColorInfo;
+    byte *bmp1ColorInfo;
+    byte *bmp2ColorInfo;
 
     fread(bmp1FileHeader,sizeof(byte),14,bmp1);
     fread(bmp1InfoHeader,sizeof(byte),40,bmp1);
 
     fread(bmp2FileHeader,sizeof(byte),14,bmp2);
     fread(bmp2InfoHeader,sizeof(byte),40,bmp2);
+
+    if(bmp1InfoHeader->biHeight != bmp2InfoHeader->biHeight || bmp1InfoHeader->biWidth != bmp2InfoHeader->biWidth)
+    {
+        perror("Images are not the same resolution and Bilinear Interpolation has not been added\n");
+        exit(EXIT_FAILURE);
+    }
+
+    int paddedBytes = (bmp1InfoHeader->biWidth * 3) % 4;
     
     // MAKE MASSIVE FOR LOOP TO LOOP THROUGH PIXELS YAYYYYYYYYYYYY
     

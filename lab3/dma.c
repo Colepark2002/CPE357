@@ -52,13 +52,13 @@ byte *mymalloc(unsigned int size)
     
     temp->info = 1; // set to occupied
     
-    return (byte *)(temp + sizeof(chunkhead)); // returns the memory after the chunkhead
+    return (byte *)(temp + 1); // returns the memory after the chunkhead
     
 }
 
 void myfree(byte *address)
 {
-    chunkhead *temp = (chunkhead *)(address - 576); // the chunkhead's start should be at the start of memory minus the size of a chunkhead 
+    chunkhead *temp = (chunkhead *)(address - sizeof(chunkhead)); // the chunkhead's start should be at the start of memory minus the size of a chunkhead 
     temp->info = 0;
     chunkhead *Prev = (chunkhead *)temp->prev;
     chunkhead *Next = (chunkhead *)temp->next;

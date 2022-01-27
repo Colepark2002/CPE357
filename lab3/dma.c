@@ -36,7 +36,7 @@ byte *mymalloc(unsigned int size)
         temp = (chunkhead *)temp->next;
     }
 
-    remaining = temp->size - needed; // if inserting at the end of the heap the remaining space is the size of the heap minus our need size of the malloc 
+    remaining = temp->size - needed; // if inserting at the end of the heap the remaining space is the size of the heap minus our need sized of the malloc 
 
     if(temp->next == 0 && remaining > sizeof(chunkhead)) // if there is room at the end of the heap, make a new chunkhead for the unallocated memory
     {
@@ -47,7 +47,7 @@ byte *mymalloc(unsigned int size)
         rest.prev = (byte *)temp;
         temp->size = needed;
         temp->next = (byte *)(temp + sizeof(chunkhead) + temp->size); // the next chunkhead should be our new chunkhead for the unallocated memory
-        *(temp + sizeof(chunkhead) + temp->size) = rest;
+        *(temp + sizeof(chunkhead) + temp->size) = rest; // inserts the new chunkhead in memory
     }
     
     temp->info = 1; // set to occupied
@@ -59,7 +59,9 @@ byte *mymalloc(unsigned int size)
 void myfree(byte *address)
 {
     chunkhead *temp = (chunkhead *)(address - sizeof(chunkhead)); // the chunkhead's start should be at the start of memory minus the size of a chunkhead 
+    
     temp->info = 0;
+    
     chunkhead *Prev = (chunkhead *)temp->prev;
     chunkhead *Next = (chunkhead *)temp->next;
 
@@ -85,7 +87,7 @@ void myfree(byte *address)
     }
 
     return;
-}
+} 
 
 void analyse()
 {

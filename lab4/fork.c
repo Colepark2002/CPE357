@@ -132,6 +132,7 @@ int main(int argc, char* argv[])
         byte *pixelData = mmap(NULL, sizeof(byte) * (bmpInfoHeader->biWidth * bmpInfoHeader->biHeight * 3), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
         
         fread(pixelData, sizeof(byte), (bmpInfoHeader->biWidth * bmpInfoHeader->biHeight), bmp);
+        fseek(bmp, 54, SEEK_SET);
         
         int childHeight, parentHeight;
         

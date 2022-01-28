@@ -129,7 +129,7 @@ int main(int argc, char* argv[])
 
     else
     {
-        byte *pixelData = mmap(NULL, sizeof(byte) * (bmpInfoHeader->biWidth * bmpInfoHeader->biHeight), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+        byte *pixelData = mmap(NULL, sizeof(byte) * (bmpInfoHeader->biWidth * bmpInfoHeader->biHeight * 3), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
         
         fread(pixelData, sizeof(byte), (bmpInfoHeader->biWidth * bmpInfoHeader->biHeight), bmp);
         
@@ -176,24 +176,24 @@ int main(int argc, char* argv[])
 
         if(pid > 0) // if parent;
         {
-            int index = 0;
+            int indData = 0;
     
             for(int y = 0; y < parentHeight; y++) // loops through child height amount of times.
             {
                 for(int x = 0; x < ((bmpInfoHeader->biWidth * 3) - paddedBytes); x++) 
                 {
-                    byte pixelColor = pixelData[index];
+                    byte pixelColor = pixelData[indData];
                     pixelColor = pixelColor + (pixelColor * brightness); // brightens the color
                     
                     if (pixelColor > 255)
                         pixelColor = 255;
-                    pixelData[index] = pixelColor;
-                    index++;
+                    pixelData[indData] = pixelColor;
+                    indData++;
                 }
                 for(int i = 0; i < paddedBytes; i++) // writes the padded bytes to the outfile.
                 {
-                    pixelData[index] = 0;
-                    index++;
+                    pixelData[indData] = 0;
+                    indData++;
                 }
                       
             }

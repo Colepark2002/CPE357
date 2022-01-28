@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/mman.h>
+#include <sys/wait.h>
 
 
 typedef unsigned char byte;
@@ -45,7 +46,8 @@ int main(int argc, char* argv[])
     }
 
     char *str = "0";
-    double brightness = atof(argv[3]);
+    double brightness = atof(argv[2]);
+    fprintf(stderr,"Brightness: %f\n", brightness);
     if((str != argv[2] && brightness == 0) || brightness < 0 || brightness > 1)
     {
         perror("Invalid Brightness Input\n");
@@ -53,8 +55,8 @@ int main(int argc, char* argv[])
     }
 
     int parrallel = atoi(argv[3]);
-    
-    if((str != argv[3] && parrallel == 0) || (parrallel != 0 || parrallel != 1))
+    fprintf(stderr,"Parrallel: %d\n", parrallel);
+    if((str[0] != argv[3][0] && parrallel == 0))
     {
         perror("Invalid Parrallel Input\n");
         exit(EXIT_FAILURE);
@@ -143,7 +145,7 @@ int main(int argc, char* argv[])
         
         if(pid == 0) // if child
         {
-            fseek(bmp,bmpInfoHeader->biHeight * bmpInfoHeader->biWidth, SEEK_CUR); // moves the file pointer ahead to write simultaneously to the file with parent
+            //fseek(bmp,bmpInfoHeader->biHeight * bmpInfoHeader->biWidth, SEEK_CUR); // moves the file pointer ahead to write simultaneously to the file with parent
             
             for(int y = 0; y < childHeight; y++) // loops through child height amount of times.
             {

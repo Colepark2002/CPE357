@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
     char *str = "0";
     double brightness = atof(argv[2]);
     fprintf(stderr,"Brightness: %f\n", brightness);
-    if((str != argv[2] && brightness == 0) || brightness < 0 || brightness > 1)
+    if((str[0] != argv[2][0] && brightness == 0) || brightness < 0 || brightness > 1)
     {
         perror("Invalid Brightness Input\n");
         exit(EXIT_FAILURE);
@@ -131,8 +131,8 @@ int main(int argc, char* argv[])
     {
         byte *pixelData = mmap(NULL, sizeof(byte) * (bmpInfoHeader->biWidth * bmpInfoHeader->biHeight * 3), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
         
-        fread(pixelData, sizeof(byte), (bmpInfoHeader->biWidth * bmpInfoHeader->biHeight), bmp);
-        fseek(bmp, -((bmpInfoHeader->biWidth * bmpInfoHeader->biHeight)), SEEK_CUR);
+        fread(pixelData, 1, (bmpInfoHeader->biWidth * bmpInfoHeader->biHeight), bmp);
+        fseek(bmp, 54, SEEK_SET);
         
         int childHeight, parentHeight;
         
@@ -199,8 +199,9 @@ int main(int argc, char* argv[])
                       
             }
             wait(NULL);
-            fwrite(pixelData, sizeof(byte), (bmpInfoHeader->biWidth * bmpInfoHeader->biHeight), outfile);
+            fwrite(pixelData, sizeof(byte), (bmpInfoHeader->biWidth * bmpInfoHeader->biHeight * 3), outfile);
         }
+        munmap(pixelData, sizeof(byte) * (bmpInfoHeader->biWidth * bmpInfoHeader->biHeight * 3));
     }
     
     

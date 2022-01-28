@@ -129,8 +129,14 @@ int main(int argc, char* argv[])
 
     else
     {
+        byte *pixelData = mmap(NULL, sizeof(byte) * (bmpInfoHeader->biWidth * bmpInfoHeader->biHeight), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+        
+        fread(pixelData, sizeof(byte), (bmpInfoHeader->biWidth * bmpInfoHeader->biHeight), bmp);
+        
         int childHeight, parentHeight;
+        
         pid_t pid = fork();
+        
         if((bmpInfoHeader->biHeight) % 2 != 0)
         {
             parentHeight = (bmpInfoHeader->biHeight)/2 + 1;
@@ -145,55 +151,54 @@ int main(int argc, char* argv[])
         
         if(pid == 0) // if child
         {
-            //fseek(bmp,bmpInfoHeader->biHeight * bmpInfoHeader->biWidth, SEEK_CUR); // moves the file pointer ahead to write simultaneously to the file with parent
-            
+            int index = bmpInfoHeader->biWidth *  parentHeight * 3;
+    
             for(int y = 0; y < childHeight; y++) // loops through child height amount of times.
             {
                 for(int x = 0; x < ((bmpInfoHeader->biWidth * 3) - paddedBytes); x++) 
                 {
-                    fread(&bmpColorInfo, sizeof(byte), 1, bmp); // reads a pixel byte information, the color type is irrelevant.
+                    byte pixelColor = pixelData[index];
+                    pixelColor = pixelColor + (pixelColor * brightness); // brightens the color
                     
-                    resultColor = bmpColorInfo + (bmpColorInfo * brightness); // brightens the color
-                    
-                    if (resultColor > 255)
-                        fwrite(&overflow, sizeof(byte), 1, outfile);
-                    else 
-                        fwrite(&resultColor, sizeof(byte), 1, outfile); // writes new color to the file.
+                    if (pixelColor > 255)
+                        pixelColor = 255;
+                    pixelData[index] = pixelColor;
+                    index++;
                 }
-                
-                fread(NULL, sizeof(byte), paddedBytes, bmp); // skips the padded bytes.
-                
                 for(int i = 0; i < paddedBytes; i++) // writes the padded bytes to the outfile.
                 {
-                    fwrite(&padding, sizeof(byte), 1, outfile);
-                }   
+                    pixelData[index] = 0;
+                    index++;
+                }
+                      
             }
         }
 
         if(pid > 0) // if parent;
         {
-            for(int y = 0; y < parentHeight; y++) // loops through parent height amount of times.
+            int index = 0;
+    
+            for(int y = 0; y < parentHeight; y++) // loops through child height amount of times.
             {
                 for(int x = 0; x < ((bmpInfoHeader->biWidth * 3) - paddedBytes); x++) 
                 {
-                    fread(&bmpColorInfo, sizeof(byte), 1, bmp); // reads a pixel byte information, the color type is irrelevant.
+                    byte pixelColor = pixelData[index];
+                    pixelColor = pixelColor + (pixelColor * brightness); // brightens the color
                     
-                    resultColor = bmpColorInfo + (bmpColorInfo * brightness); // brightens the color
-                    
-                    if (resultColor > 255)
-                        fwrite(&overflow, sizeof(byte), 1, outfile);
-                    else 
-                        fwrite(&resultColor, sizeof(byte), 1, outfile); // writes new color to the file.
+                    if (pixelColor > 255)
+                        pixelColor = 255;
+                    pixelData[index] = pixelColor;
+                    index++;
                 }
-                
-                fread(NULL, sizeof(byte), paddedBytes, bmp); // skips the padded bytes.
-                
                 for(int i = 0; i < paddedBytes; i++) // writes the padded bytes to the outfile.
                 {
-                    fwrite(&padding, sizeof(byte), 1, outfile);
+                    pixelData[index] = 0;
+                    index++;
                 }
+                      
             }
             wait(NULL);
+            fwrite(pixelData, sizeof(byte), (bmpInfoHeader->biWidth * bmpInfoHeader->biHeight), outfile);
         }
     }
     

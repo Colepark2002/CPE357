@@ -131,7 +131,7 @@ int main(int argc, char* argv[])
     {
         byte *pixelData = mmap(NULL, sizeof(byte) * (bmpInfoHeader->biWidth * bmpInfoHeader->biHeight * 3), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
         
-        fread(pixelData, 1, (bmpInfoHeader->biWidth * bmpInfoHeader->biHeight), bmp);
+        fread(pixelData, 1, (bmpInfoHeader->biWidth * bmpInfoHeader->biHeight * 3), bmp);
         fseek(bmp, 54, SEEK_SET);
         
         int childHeight, parentHeight;
@@ -162,7 +162,9 @@ int main(int argc, char* argv[])
                     pixelColor = pixelColor + (pixelColor * brightness); // brightens the color
                     
                     if (pixelColor > 255)
+                    {
                         pixelColor = 255;
+                    }
                     pixelData[index] = pixelColor;
                     index++;
                 }
@@ -187,7 +189,9 @@ int main(int argc, char* argv[])
                     pixelColor = pixelColor + (pixelColor * brightness); // brightens the color
                     
                     if (pixelColor > 255)
+                    {
                         pixelColor = 255;
+                    }
                     pixelData[indData] = pixelColor;
                     indData++;
                 }

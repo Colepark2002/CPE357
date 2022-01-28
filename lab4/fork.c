@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/mman.h>
 
 
 typedef unsigned char byte;
@@ -68,18 +69,18 @@ int main(int argc, char* argv[])
         exit(EXIT_FAILURE);
     }
     
-    tagBITMAPFILEHEADER *bmpFileHeader = (tagBITMAPFILEHEADER*)malloc(sizeof(tagBITMAPFILEHEADER));
+    tagBITMAPFILEHEADER *bmpFileHeader = (tagBITMAPFILEHEADER*)mmap(NULL, sizeof(tagBITMAPFILEHEADER), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1,0);
 
-    tagBITMAPINFOHEADER *bmpInfoHeader = (tagBITMAPINFOHEADER*)malloc(sizeof(tagBITMAPINFOHEADER));
+    tagBITMAPINFOHEADER *bmpInfoHeader = (tagBITMAPINFOHEADER*)mmap(NULL, sizeof(tagBITMAPINFOHEADER), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1,0);
 
     if(bmpFileHeader == NULL) // check for malloc errors.
     {
-        perror("Malloc Error for bmp1FileHeader\n");
+        perror("Malloc Error for bmpFileHeader\n");
         exit(EXIT_FAILURE);
     }
     if(bmpInfoHeader == NULL)
     {
-        perror("Malloc Error for bmp1InfoHeader\n");
+        perror("Malloc Error for bmpInfoHeader\n");
         exit(EXIT_FAILURE);
     }
 
@@ -126,22 +127,77 @@ int main(int argc, char* argv[])
 
     else
     {
+        int childHeight, parentHeight;
         pid_t pid = fork();
-        
-        if(pid == 0)
+        if((bmpInfoHeader->biHeight) % 2 != 0)
         {
-
+            parentHeight = (bmpInfoHeader->biHeight)/2 + 1;
+            childHeight = (bmpInfoHeader->biHeight)/2;
+        }
+        else
+        {
+            parentHeight = (bmpInfoHeader->biHeight)/2;
+            childHeight = (bmpInfoHeader->biHeight)/2;
+        }
+        
+        
+        if(pid == 0) // if child
+        {
+            fseek(bmp,bmpInfoHeader->biHeight * bmpInfoHeader->biWidth, SEEK_CUR); // moves the file pointer ahead to write simultaneously to the file with parent
+            
+            for(int y = 0; y < childHeight; y++) // loops through child height amount of times.
+            {
+                for(int x = 0; x < ((bmpInfoHeader->biWidth * 3) - paddedBytes); x++) 
+                {
+                    fread(&bmpColorInfo, sizeof(byte), 1, bmp); // reads a pixel byte information, the color type is irrelevant.
+                    
+                    resultColor = bmpColorInfo + (bmpColorInfo * brightness); // brightens the color
+                    
+                    if (resultColor > 255)
+                        fwrite(&overflow, sizeof(byte), 1, outfile);
+                    else 
+                        fwrite(&resultColor, sizeof(byte), 1, outfile); // writes new color to the file.
+                }
+                
+                fread(NULL, sizeof(byte), paddedBytes, bmp); // skips the padded bytes.
+                
+                for(int i = 0; i < paddedBytes; i++) // writes the padded bytes to the outfile.
+                {
+                    fwrite(&padding, sizeof(byte), 1, outfile);
+                }   
+            }
         }
 
-        if(pid > 0)
+        if(pid > 0) // if parent;
         {
-
+            for(int y = 0; y < parentHeight; y++) // loops through parent height amount of times.
+            {
+                for(int x = 0; x < ((bmpInfoHeader->biWidth * 3) - paddedBytes); x++) 
+                {
+                    fread(&bmpColorInfo, sizeof(byte), 1, bmp); // reads a pixel byte information, the color type is irrelevant.
+                    
+                    resultColor = bmpColorInfo + (bmpColorInfo * brightness); // brightens the color
+                    
+                    if (resultColor > 255)
+                        fwrite(&overflow, sizeof(byte), 1, outfile);
+                    else 
+                        fwrite(&resultColor, sizeof(byte), 1, outfile); // writes new color to the file.
+                }
+                
+                fread(NULL, sizeof(byte), paddedBytes, bmp); // skips the padded bytes.
+                
+                for(int i = 0; i < paddedBytes; i++) // writes the padded bytes to the outfile.
+                {
+                    fwrite(&padding, sizeof(byte), 1, outfile);
+                }
+            }
+            wait(NULL);
         }
     }
     
     
-    free(bmpFileHeader); // free final information.
-    free(bmpInfoHeader);
+    munmap(bmpFileHeader, sizeof(tagBITMAPFILEHEADER)); // unmap final information.
+    munmap(bmpInfoHeader, sizeof(tagBITMAPINFOHEADER));
 
     fclose(bmp); // closing my files.
     fclose(outfile);

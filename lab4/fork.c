@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <sys/mman.h>
 #include <sys/wait.h>
+#include <time.h>
 
 
 typedef unsigned char byte;
@@ -36,7 +37,7 @@ typedef struct tagBITMAPINFOHEADER
 
 int main(int argc, char* argv[])
 {
-
+    clock_t start = clock();
     
 
     if(argc != 5) // incorrect input check.
@@ -175,6 +176,7 @@ int main(int argc, char* argv[])
                 }
                       
             }
+            return 0;
         }
 
         if(pid > 0) // if parent;
@@ -214,6 +216,7 @@ int main(int argc, char* argv[])
 
     fclose(bmp); // closing my files.
     fclose(outfile);
-    
+    clock_t end = clock();
+    printf("Timer: %ld\n", end - start);
     return 0;
 }

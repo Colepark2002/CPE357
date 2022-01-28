@@ -110,7 +110,7 @@ int main(int argc, char* argv[])
             {
                 fread(&bmpColorInfo, sizeof(byte), 1, bmp); // reads a pixel byte information, the color type is irrelevant.
                 
-                resultColor = bmpColorInfo + (bmpColorInfo * brightness); // brightens the color
+                resultColor = bmpColorInfo + (255 * brightness); // brightens the color
                 
                 if (resultColor > 255)
                     fwrite(&overflow, sizeof(byte), 1, outfile);
@@ -159,7 +159,7 @@ int main(int argc, char* argv[])
                 for(int x = 0; x < ((bmpInfoHeader->biWidth * 3) - paddedBytes); x++) 
                 {
                     byte pixelColor = pixelData[index];
-                    pixelColor = pixelColor + (pixelColor * brightness); // brightens the color
+                    pixelColor = pixelColor + (255 * brightness); // brightens the color
                     
                     if (pixelColor > 255)
                     {
@@ -186,7 +186,7 @@ int main(int argc, char* argv[])
                 for(int x = 0; x < ((bmpInfoHeader->biWidth * 3) - paddedBytes); x++) 
                 {
                     byte pixelColor = pixelData[indData];
-                    pixelColor = pixelColor + (pixelColor * brightness); // brightens the color
+                    pixelColor = pixelColor + (255 * brightness); // brightens the color
                     
                     if (pixelColor > 255)
                     {

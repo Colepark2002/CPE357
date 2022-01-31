@@ -123,25 +123,38 @@ void myfree(byte *address)
     chunkhead *Prev = (chunkhead *)temp->prev;
     chunkhead *Next = (chunkhead *)temp->next;
 
+
     if(Prev != 0 || Next != 0)
     {
         if(Prev != 0 && Prev->info == 0 && Next != 0 && Next->info == 0)
         {
             Prev->size = temp->size + Prev->size + Next->size + (2 * sizeof(chunkhead));
             Prev->next = Next->next;
+            heapsize -= Prev->size + sizeof(chunkhead);
         }
 
         else if(Prev != 0 && Prev->info == 0)
         {
             Prev->size = temp->size + Prev->size + sizeof(chunkhead);
             Prev->next = temp->next;
+            heapsize -= Prev->size + sizeof(chunkhead);
         }
 
         else if(Next != 0 && Next->info == 0)
         {
             temp->size = temp->size + Next->size + sizeof(chunkhead);
             temp->next = Next->next;
+            heapsize += temp->size + sizeof(chunkhead);
         }
+    }
+    else
+    {
+        heapsize -= temp->size + sizeof(chunkhead);
+    }
+
+    if(heapsize == 0) // if heap has no allocated memory move program break;
+    {
+        brk(head);
     }
 
     return;

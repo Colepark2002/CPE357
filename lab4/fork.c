@@ -48,7 +48,6 @@ int main(int argc, char* argv[])
 
     char *str = "0";
     double brightness = atof(argv[2]);
-    fprintf(stderr,"Brightness: %f\n", brightness);
     if((str[0] != argv[2][0] && brightness == 0) || brightness < 0 || brightness > 1)
     {
         perror("Invalid Brightness Input\n");
@@ -56,8 +55,7 @@ int main(int argc, char* argv[])
     }
 
     int parrallel = atoi(argv[3]);
-    fprintf(stderr,"Parrallel: %d\n", parrallel);
-    if((str[0] != argv[3][0] && parrallel == 0))
+    if((str[0] != argv[3][0] && parrallel == 0) || parrallel < 0 || parrallel > 1)
     {
         perror("Invalid Parrallel Input\n");
         exit(EXIT_FAILURE);
@@ -112,11 +110,13 @@ int main(int argc, char* argv[])
                 fread(&bmpColorInfo, sizeof(byte), 1, bmp); // reads a pixel byte information, the color type is irrelevant.
                 
                 
-                if (resultColor + (255 * brightness) > 255)
+                if ((bmpColorInfo + (255 * brightness)) > 255)
                     fwrite(&overflow, sizeof(byte), 1, outfile);
                 else 
+                {
                     resultColor = bmpColorInfo + (255 * brightness);
                     fwrite(&resultColor, sizeof(byte), 1, outfile); // writes new color to the file.
+                }
             }
             
             fread(NULL, sizeof(byte), paddedBytes, bmp); // skips the padded bytes.
@@ -132,7 +132,7 @@ int main(int argc, char* argv[])
     {
         byte *pixelData = mmap(NULL, sizeof(byte) * (bmpInfoHeader->biWidth * bmpInfoHeader->biHeight * 3), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
         
-        fread(pixelData, 1, (bmpInfoHeader->biWidth * bmpInfoHeader->biHeight * 3), bmp);
+        fread(pixelData, sizeof(byte), (bmpInfoHeader->biWidth * bmpInfoHeader->biHeight * 3), bmp);
         fseek(bmp, 54, SEEK_SET);
         
         int childHeight, parentHeight;
@@ -159,15 +159,17 @@ int main(int argc, char* argv[])
             {
                 for(int x = 0; x < ((bmpInfoHeader->biWidth * 3) - paddedBytes); x++) 
                 {
-                    byte pixelColor = pixelData[index];
-                    pixelColor = pixelColor + (255 * brightness); // brightens the color
+                    byte pixelColor = pixelData[index];// brightens the color
+                    int pixel = pixelColor;
                     
-                    if (pixelColor + (255 * brightness) > 255)
+                    if (pixel + (255 * brightness) > 255)
                     {
                         pixelColor = 255;
                     }
                     else
-                        pixelColor = pixelColor + (255 + brightness);
+                    {
+                        pixelColor = pixelColor + (255 * brightness);
+                    }
                     pixelData[index] = pixelColor;
                     index++;
                 }
@@ -185,19 +187,21 @@ int main(int argc, char* argv[])
         {
             int indData = 0;
     
-            for(int y = 0; y < parentHeight; y++) // loops through child height amount of times.
+            for(int y = 0; y < parentHeight; y++) // loops through parent height amount of times.
             {
                 for(int x = 0; x < ((bmpInfoHeader->biWidth * 3) - paddedBytes); x++) 
                 {
-                    byte pixelColor = pixelData[indData];
-                    pixelColor = pixelColor + (255 * brightness); // brightens the color
+                    byte pixelColor = pixelData[indData]; // brightens the color
+                    int pixel = pixelColor;
                     
-                    if (pixelColor + (255 * brightness) > 255)
+                    if (pixel + (255 * brightness) > 255)
                     {
                         pixelColor = 255;
                     }
                     else
-                        pixelColor = pixelColor + (255 + brightness);
+                    {
+                        pixelColor = pixelColor + (255 * brightness);
+                    }
                     pixelData[indData] = pixelColor;
                     indData++;
                 }

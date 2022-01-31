@@ -17,7 +17,6 @@ typedef struct chunkhead
 chunkhead *head = NULL;
 int heapsize = 0;
 
-chunkhead *start;
 void *prgBrk;
 
 
@@ -25,39 +24,93 @@ byte *mymalloc(unsigned int size)
 {
     int i;
     unsigned int needed;
+    unsigned int remaining;
+    
     chunkhead *temp = head;
+    chunkhead *p;
     chunkhead new;
     chunkhead *best = NULL;
     
+    byte *insert;
+    
     for(i = 1; ((i * PAGESIZE) - (size + sizeof(chunkhead))) < 0; i++); // finds the correct amount of pages needed
     
-    needed = (i * PAGESIZE); // the needed size of memory
+    needed = (i * PAGESIZE) - sizeof(chunkhead); // the needed size of memory
 
     if(heapsize == 0)
     {
-        prgBrk = sbrk(needed);
+        sbrk(i * PAGESIZE);
+        prgBrk = sbrk(0);
         new.info = 1;
         new.size = needed;
         new.next = new.prev = 0;
-        *(start) = new;
-        head = start;
+        *(head) = new;
+        heapsize += (i * PAGESIZE);
         return (byte *)(head + 1);
     }
 
     while(temp != 0) // finds the next available chunkhead of correct size or returns NULL
     {
         if(temp->info == 0 && temp->size >= needed)
-            best = temp;
+            if(best == NULL)
+                best = temp;
+            else if(best->size > temp->size)
+                best = temp;
+            
+        p = temp;
         temp = (chunkhead *)temp->next;
     }
     
-    if(best != NULL)
+    if(best != NULL) // insert if there is correctly sized free chunk 
     {
+        if(best->size - needed == 0) // inserting in a chunk of exact size;
+        {
+            best->info == 1;
+            heapsize += (i * PAGESIZE);
+            return (byte *)(best + 1);
+        }
+        else // inserting and splitting the memory
+        {
+            remaining = best->size - (needed + sizeof(chunkhead));
+            insert = (byte *)best;
+            
+            
+            new.info = 0; // sets up the split chunk
+            new.size = remaining - (sizeof(chunkhead));
+            new.prev = insert;
+            new.next = best->next;
+
+            heapsize += best->size + sizeof(chunkhead);
+
+            best->size = needed; // changes the open chunk to spec
+            best->info = 1;
+            insert = insert + sizeof(chunkhead) + best->size;
+            best->next = insert; 
+
+            temp = (chunkhead *)insert; //inserts the chunk in to memory
+            *(temp) = new;
+            
+            
+
+            return (byte *)(temp + 1);
+        }
+    }
+    else // inserts at the end of the heap by extending the heap size
+    {
+        new.info = 1; //sets up allocated chunk
+        new.size = needed;
+        new.prev = p;
+        new.next = 0;
+
+        sbrk(i * PAGESIZE); // allocates memory to heap
+        heapsize += (i * PAGESIZE);
+        
+        temp = (chunkhead*)(prgBrk + 1); // inserts the new chunkhead;
+        *(temp) = new;
+        prgBrk = sbrk(0);
+        return (byte *)(temp + 1);
 
     }
-
-    
-    return (byte *)(temp + 1); // returns the memory after the chunkhead
     
 }
 
@@ -115,7 +168,7 @@ void analyse()
 
 void main()
 {
-    start = sbrk(0);
+    head = sbrk(0);
 
     byte *a,*b,*c; 
     a = mymalloc(1000); 

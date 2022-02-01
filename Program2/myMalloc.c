@@ -125,27 +125,27 @@ void myfree(byte *address)
     chunkhead *Next = (chunkhead *)temp->next;
 
 
-    if(Prev != 0 || Next != 0)
+    if(Prev != 0 || Next != 0) // if prev or next exists 
     {
-        if(Prev != 0 && Prev->info == 0 && Next != 0 && Next->info == 0)
+        if(Prev != 0 && Prev->info == 0 && Next != 0 && Next->info == 0) // if both are free
         {
             Prev->size = temp->size + Prev->size + Next->size + (2 * sizeof(chunkhead));
             Prev->next = Next->next;
             heapsize -= Prev->size + sizeof(chunkhead);
         }
 
-        else if(Prev != 0 && Prev->info == 0)
+        else if(Prev != 0 && Prev->info == 0) // if only prev is free
         {
             Prev->size = temp->size + Prev->size + sizeof(chunkhead);
             Prev->next = temp->next;
             heapsize -= Prev->size + sizeof(chunkhead);
         }
 
-        else if(Next != 0 && Next->info == 0)
+        else if(Next != 0 && Next->info == 0) // if only next is free
         {
             temp->size = temp->size + Next->size + sizeof(chunkhead);
             temp->next = Next->next;
-            heapsize += temp->size + sizeof(chunkhead);
+            heapsize -= temp->size + sizeof(chunkhead);
         }
     }
     else
@@ -156,29 +156,32 @@ void myfree(byte *address)
     if(heapsize == 0) // if heap has no allocated memory move program break;
     {
         brk(head);
+        head = NULL;
     }
 
     return;
 } 
 
-void analyse()
-{
-    chunkhead *temp = head;
-    int chunknum = 1;
-    while(temp != 0)
-    {
-        printf("Chunk #%d:\n", chunknum++);
-        printf("Size = %d bytes\n", temp->size);
-        if(temp->info == 0)
-            printf("Free\n");
-        else
-            printf("Occupied\n");
-        printf("Next = %p\n", temp->next);
-        printf("Prev = %p\n\n",temp->prev);
-        temp = (chunkhead *)temp->next;
-    }
-    return;
-}
+void analyze() 
+ { 
+    printf("\n--------------------------------------------------------------\n"); 
+    if(!head) 
+    { 
+        printf("no heap"); 
+        return; 
+    } 
+    chunkhead* ch = head; 
+    for (int no=0; ch; ch = (chunkhead*)ch->next,no++) 
+    { 
+        printf("%d | current addr: %x |", no, ch); 
+        printf("size: %d | ", ch->size); 
+        printf("info: %d | ", ch->info); 
+        printf("next: %x | ", ch->next); 
+        printf("prev: %x", ch->prev); 
+        printf("      \n"); 
+    } 
+    printf("program break on address: %x\n",sbrk(0)); 
+ } 
 
 void main()
 {

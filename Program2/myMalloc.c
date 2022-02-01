@@ -194,9 +194,11 @@ void main()
     analyze();
 
     myfree(a);
-    mymalloc(1000);
+    c = mymalloc(1000);
 
-     analyze();
+    analyze();
+    myfree(b);
+    myfree(c);
     
     return;
 }

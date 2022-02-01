@@ -165,21 +165,21 @@ void myfree(byte *address)
 
 void analyze() 
  { 
-    printf("\n--------------------------------------------------------------\n"); 
+    fprintf(stderr,"\n--------------------------------------------------------------\n"); 
     if(head == NULL) 
     { 
-        printf("no heap\n"); 
+        fprintf(stderr,"no heap\n"); 
         return; 
     } 
     chunkhead* ch = head; 
     for (int no=0; ch; ch = (chunkhead*)ch->next,no++) 
     { 
-        printf("%d | current addr: %x |", no, ch); 
-        printf("size: %d | ", ch->size + (sizeof(chunkhead))); 
-        printf("info: %d | ", ch->info); 
-        printf("next: %x | ", ch->next); 
-        printf("prev: %x", ch->prev); 
-        printf("      \n"); 
+        fprintf(stderr,"%d | current addr: %x |", no, ch); 
+        fprintf(stderr,"size: %d | ", ch->size + (sizeof(chunkhead))); 
+        fprintf(stderr,"info: %d | ", ch->info); 
+        fprintf(stderr,"next: %x | ", ch->next); 
+        fprintf(stderr,"prev: %x", ch->prev); 
+        fprintf(stderr,"      \n"); 
     } 
     printf("program break on address: %x\n",sbrk(0)); 
  } 

@@ -49,7 +49,7 @@ byte *mymalloc(unsigned int size)
         return (byte *)(head + 1);
     }
 
-    while(temp != 0) // finds the next available chunkhead of correct size or returns NULL
+    while(temp != 0) // finds the best available chunkhead of correct size
     {
         if(temp->info == 0 && temp->size >= needed)
             if(best == NULL)
@@ -105,7 +105,7 @@ byte *mymalloc(unsigned int size)
         sbrk(i * PAGESIZE); // allocates memory to heap
         heapsize += (i * PAGESIZE);
         
-        temp = (chunkhead*)(prgBrk + sizeof(chunkhead)); // inserts the new chunkhead;
+        temp = (chunkhead*)(prgBrk); // inserts the new chunkhead;
         *(temp) = new;
         prgBrk = sbrk(0);
         p->next = (byte *)temp;

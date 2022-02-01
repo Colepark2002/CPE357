@@ -33,12 +33,13 @@ byte *mymalloc(unsigned int size)
     
     byte *insert;
     
-    for(i = 1; ((i * PAGESIZE) - (size + sizeof(chunkhead))) < 0; i++); // finds the correct amount of pages needed
+    for(i = 1; (i * PAGESIZE) < (size + sizeof(chunkhead)); i++); // finds the correct amount of pages needed
     
     needed = (i * PAGESIZE) - sizeof(chunkhead); // the needed size of memory
 
     if(heapsize == 0)
     {
+        head = sbrk(0);
         sbrk(i * PAGESIZE);
         prgBrk = sbrk(0);
         new.info = 1;
@@ -71,7 +72,7 @@ byte *mymalloc(unsigned int size)
         }
         else // inserting and splitting the memory
         {
-            remaining = best->size - (needed + sizeof(chunkhead));
+            remaining = best->size - (i * PAGESIZE);
             insert = (byte *)best;
             
             
@@ -165,16 +166,16 @@ void myfree(byte *address)
 void analyze() 
  { 
     printf("\n--------------------------------------------------------------\n"); 
-    if(!head) 
+    if(head == NULL) 
     { 
-        printf("no heap"); 
+        printf("no heap\n"); 
         return; 
     } 
     chunkhead* ch = head; 
     for (int no=0; ch; ch = (chunkhead*)ch->next,no++) 
     { 
         printf("%d | current addr: %x |", no, ch); 
-        printf("size: %d | ", ch->size); 
+        printf("size: %d | ", ch->size + (sizeof(chunkhead))); 
         printf("info: %d | ", ch->info); 
         printf("next: %x | ", ch->next); 
         printf("prev: %x", ch->prev); 
@@ -185,15 +186,18 @@ void analyze()
 
 void main()
 {
-    head = sbrk(0);
 
     byte *a,*b,*c; 
-    a = mymalloc(1000); 
-    b = mymalloc(1000); 
-    c = mymalloc(1000); 
-    myfree(b); 
-    myfree(a); 
-    analyse(); 
+    a = mymalloc(4096*2); 
+    b = mymalloc(1000);
+    
+    analyze(); 
+
+    myfree(b);
+    myfree(a);
+
+
+    analyze();
     
     return;
 }

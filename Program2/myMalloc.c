@@ -191,13 +191,12 @@ void main()
     a = mymalloc(4096*2); 
     b = mymalloc(1000);
     
-    analyze(); 
-
-    myfree(b);
-    myfree(a);
-
-
     analyze();
+
+    myfree(a);
+    mymalloc(1000);
+
+     analyze();
     
     return;
 }

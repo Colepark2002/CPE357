@@ -31,13 +31,13 @@ byte *mymalloc(unsigned int size)
     chunkhead new;
     chunkhead *best = NULL;
     
-    byte *insert;
+    byte *insert; // used to convert temp or best into a byte pointer to index without steps of sizeof(chunkhead)
     
     for(i = 1; (i * PAGESIZE) < (size + sizeof(chunkhead)); i++); // finds the correct amount of pages needed
     
     needed = (i * PAGESIZE) - sizeof(chunkhead); // the needed size of memory
 
-    if(heapsize == 0)
+    if(heapsize == 0) // if heap is empty
     {
         head = sbrk(0);
         sbrk(i * PAGESIZE);

@@ -99,15 +99,16 @@ byte *mymalloc(unsigned int size)
     {
         new.info = 1; //sets up allocated chunk
         new.size = needed;
-        new.prev = p;
+        new.prev = (byte *)p;
         new.next = 0;
 
         sbrk(i * PAGESIZE); // allocates memory to heap
         heapsize += (i * PAGESIZE);
         
-        temp = (chunkhead*)(prgBrk + 1); // inserts the new chunkhead;
+        temp = (chunkhead*)(prgBrk + sizeof(chunkhead)); // inserts the new chunkhead;
         *(temp) = new;
         prgBrk = sbrk(0);
+        p->next = (byte *)temp;
         return (byte *)(temp + 1);
 
     }

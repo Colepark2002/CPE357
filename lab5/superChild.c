@@ -10,17 +10,16 @@
 
 void handler(int i)
 {
-    fprintf(stderr,"Nice try!\n");
+    fprintf(stderr,"\nNice try!\n");
     return;
 }
 
 
 int main()
 {
+    DIR *currDir;
     int pid;
-
     pid = fork();
-    
     
     if(pid != 0)
     {
@@ -36,7 +35,6 @@ int main()
         signal(6,handler);
         signal(9,handler);
         signal(15,handler);
-        signal(17,handler);
         signal(18,handler);
         signal(19,handler);
         signal(20,handler);
@@ -47,18 +45,16 @@ int main()
         }
         else
         {
-            time_t T= time(NULL); 
+            time_t T = time(NULL); 
             struct tm currTime = *localtime(&T); //tm.tm_hour, tm.tm_min 
-            fprintf(stderr, "The Time is: %d:%d:%d\n", currTime.tm_hour, currTime.tm_min, currTime.tm_sec);
-            DIR *currDir = opendir(".");
+            printf("The Time is: %d:%d:%d\n", currTime.tm_hour, currTime.tm_min, currTime.tm_sec);
+            currDir = opendir(".");
             struct dirent *file;
             while((file = readdir(currDir)) != NULL)
             {
-                fprintf(stderr,"%s\n", file->d_name);
+                printf("%s\n", file->d_name);
             }
-            closedir(currDir);
-            pid = getpid();
-            fprintf(stderr, "Child Process ID %d\n", pid);
+            printf("Child Process ID %d\n", getpid());
             sleep(10);
         }
             

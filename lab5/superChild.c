@@ -28,9 +28,19 @@ int main()
     signal(9,handler);
     signal(15,handler);
     signal(17,handler);
+    signal(18,handler);
     signal(19,handler);
     signal(20,handler);
 
+    if(pid2 > 0)
+    {
+        for(;;)
+        {
+            wait(NULL);
+            pid2 = fork();
+        }
+    }
+    
     if (pid2 == 0)
     { 
         for(;;)
@@ -51,13 +61,6 @@ int main()
 
         }
     }
-    if(pid2 > 0)
-    {
-        for(;;)
-        {
-            wait(NULL);
-            pid2 = fork();
-        }
-    }
+    
     return 0;
 }

@@ -5,7 +5,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
-
+#include <sys/wait.h>
+#include <signal.h>
 
 void handler(int i)
 {
@@ -16,34 +17,35 @@ void handler(int i)
 
 int main()
 {
-    int pid1, pid2;
+    int pid;
 
-    pid1 = getpid();
-    fprintf(stderr,"Parent Process ID %d\n", pid1);
-    pid2 = fork();
-
-    signal(2,handler);
-    signal(3,handler);
-    signal(6,handler);
-    signal(9,handler);
-    signal(15,handler);
-    signal(17,handler);
-    signal(18,handler);
-    signal(19,handler);
-    signal(20,handler);
-
-    if(pid2 > 0)
+    pid = fork();
+    
+    
+    if(pid != 0)
     {
-        for(;;)
-        {
-            wait(NULL);
-            pid2 = fork();
-        }
+        fprintf(stderr, "Parent PID: %d\n", getpid());
     }
     
-    if (pid2 == 0)
-    { 
-        for(;;)
+    
+
+    while(1)
+    {
+        signal(2,handler);
+        signal(3,handler);
+        signal(6,handler);
+        signal(9,handler);
+        signal(15,handler);
+        signal(17,handler);
+        signal(18,handler);
+        signal(19,handler);
+        signal(20,handler);
+        if(pid != 0)
+        {
+            wait(NULL);
+            pid = fork();
+        }
+        else
         {
             time_t T= time(NULL); 
             struct tm currTime = *localtime(&T); //tm.tm_hour, tm.tm_min 
@@ -55,12 +57,11 @@ int main()
                 fprintf(stderr,"%s\n", file->d_name);
             }
             closedir(currDir);
-            pid1 = getpid();
-            fprintf(stderr, "Child Process ID %d\n", pid1);
+            pid = getpid();
+            fprintf(stderr, "Child Process ID %d\n", pid);
             sleep(10);
-
         }
+            
     }
-    
     return 0;
 }

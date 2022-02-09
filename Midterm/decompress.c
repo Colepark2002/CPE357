@@ -39,9 +39,8 @@ typedef struct col
 typedef struct compressedformat
 {
     int width, height;         // width and height of the image, with one byte for each color, blue, green and red
-    int rowbyte_quarter[4];    // for parallel algorithms! That’s the location in bytes which exactly splits the result image after decompression into 4 equal parts!
+    int rowbyte_quarter[4];    // for parallel algorithms! That’s the amount in bytes which exactly splits the result image after decompression into 4 equal parts!
     int palettecolors;         // how many colors does the picture have?
-    col colors[palettecolors]; // all participating colors of the image. Further below is the structure “col” described
 }compressedformat;
 
 typedef struct chunk
@@ -73,7 +72,11 @@ int main()
         exit(EXIT_FAILURE);
     }
     
-    fread(&header, sizeof(compressedformat), 1,infile);
+    fread(&header, sizeof(byte), 28,infile);
+    col colors[header.palettecolors];
+    int totalbytes = header.rowbyte_quarter[3];
+    byte colorInfo[totalbytes];
+    printf("%d\n", totalbytes);
     
     bmpFileHeader.bfType = 19778;
     bmpFileHeader.bfSize = 4320054;
@@ -82,7 +85,7 @@ int main()
     bmpFileHeader.bfOffBits = 54;
     fwrite(&bmpFileHeader, sizeof(byte), 14, outfile);
 
-    bmpInfoHeader.size = 40;
+    bmpInfoHeader.biSize = 40;
     bmpInfoHeader.biWidth = 1200;
     bmpInfoHeader.biHeight = 1200;
     bmpInfoHeader.biPlanes = 1;
@@ -93,18 +96,17 @@ int main()
     bmpInfoHeader.biYPelsPerMeter = 3780;
     bmpInfoHeader.biClrUsed = 0;
     bmpInfoHeader.biClrImportant = 0;
-    fwrite(&tagBITMAPINFOHEADER, sizeof(byte), 40, outfile);
+    fwrite(&bmpInfoHeader, sizeof(byte), 40, outfile);
 
-    padding = (bmpInfoHeader->biWidth * 3) % 4;
+    padding = (bmpInfoHeader.biWidth * 3) % 4;
 
     if(normal)
     {
-
+        
     }
     else
     {
 
     }
-
     return 0;
 }

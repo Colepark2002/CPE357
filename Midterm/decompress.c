@@ -107,9 +107,9 @@ int main()
     if(normal)
     {
         
-        for(index = 0; index < totalbytes;index+=3) //reads in all bytes in multiples of chunks
+        for(int x = 0; x < (totalbytes/3);x++) //reads in all bytes in multiples of chunks
         {
-            currChunk = (chunk*)(colorInfo + index);
+            currChunk = (colorInfo + index);
             col currColor = colors[currChunk->color_index];
             sum += currChunk->count;
             for(int i = 0; i < currChunk->count;i++) //for each chunk add count many pixels of the specified color
@@ -128,7 +128,7 @@ int main()
                 bmpdata[bmpI++] = (byte)currColor.r;
                 bytesRead += 3;
             }
-            
+            index+=3;
         }
     }
     else

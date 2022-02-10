@@ -54,8 +54,8 @@ int main()
     tagBITMAPFILEHEADER bmpFileHeader;
     tagBITMAPINFOHEADER bmpInfoHeader;
     compressedformat header;
-    chunk currChunk;
-    int normal;
+    chunk *currChunk;
+    int normal = 1;
     int padding;
     
     FILE* outfile = fopen("decompressed.bmp", "wb");
@@ -76,8 +76,8 @@ int main()
     col colors[header.palettecolors];
     int totalbytes = header.rowbyte_quarter[3];
     byte colorInfo[totalbytes];
-    printf("%d\n", totalbytes);
-    
+    fread(&colors,sizeof(byte),header.palettecolors * 12,infile);
+    fread(&colorInfo,sizeof(byte),totalbytes,infile);
     bmpFileHeader.bfType = 19778;
     bmpFileHeader.bfSize = 4320054;
     bmpFileHeader.bfReserved1 = 0;
@@ -99,14 +99,42 @@ int main()
     fwrite(&bmpInfoHeader, sizeof(byte), 40, outfile);
 
     padding = (bmpInfoHeader.biWidth * 3) % 4;
-
+    byte bmpdata[bmpInfoHeader.biWidth * bmpInfoHeader.biHeight * 3];
+    int bmpI = 0;
+    int bytesRead = 0;
+    int index = 0;
+    int sum = 0;
     if(normal)
     {
         
+        for(index = 0; index < totalbytes;index+=3) //reads in all bytes in multiples of chunks
+        {
+            currChunk = (chunk*)(colorInfo + index);
+            col currColor = colors[currChunk->color_index];
+            sum += currChunk->count;
+            for(int i = 0; i < currChunk->count;i++) //for each chunk add count many pixels of the specified color
+            {
+                if(bytesRead == (bmpInfoHeader.biWidth * 3))//if at the end of the width added needed padding to file
+                {
+                    for(int j = 0; j < padding; j++)
+                    {
+                        bmpdata[bmpI++] = 0;
+                        bytesRead++;
+                    }
+                    bytesRead = 0;
+                }
+                bmpdata[bmpI++] = (byte)currColor.b;
+                bmpdata[bmpI++] = (byte)currColor.g;
+                bmpdata[bmpI++] = (byte)currColor.r;
+                bytesRead += 3;
+            }
+            
+        }
     }
     else
     {
 
     }
+    fwrite(bmpdata,sizeof(byte), bmpInfoHeader.biWidth * bmpInfoHeader.biHeight * 3,outfile);
     return 0;
 }

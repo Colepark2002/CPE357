@@ -82,7 +82,7 @@ int main()
     bmpFileHeader.bfSize = 4320054;
     bmpFileHeader.bfReserved1 = 0;
     bmpFileHeader.bfReserved2 = 0;
-    bmpFileHeader.bfOffBits = 54;
+    bmpFileHeader.bfOffBits = 0;
     fwrite(&bmpFileHeader, sizeof(byte), 14, outfile);
 
     bmpInfoHeader.biSize = 40;

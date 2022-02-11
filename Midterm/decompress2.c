@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/mman.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 typedef unsigned char byte;
 
@@ -55,7 +58,7 @@ int main()
     tagBITMAPINFOHEADER bmpInfoHeader;
     compressedformat header;
     chunk *currChunk;
-    int normal = 1;
+    int normal = 0;
     int padding;
     
     FILE* outfile = fopen("decompressed2.bmp", "wb");
@@ -75,7 +78,8 @@ int main()
     fread(&header, sizeof(byte), 28,infile);
     col colors[header.palettecolors];
     int totalbytes = header.rowbyte_quarter[3];
-    chunk chunkData[(totalbytes/3)];
+    //chunk chunkData[(totalbytes/3)];
+    chunk *chunkData = mmap(NULL, (sizeof(chunk) * (totalbytes/3)), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
     fread(&colors,sizeof(byte),header.palettecolors * 12,infile);
     int chunkI = 0;
     for(int y = 0; y < (totalbytes/3); y++)
@@ -90,7 +94,7 @@ int main()
     bmpFileHeader.bfSize = 4320054;
     bmpFileHeader.bfReserved1 = 0;
     bmpFileHeader.bfReserved2 = 0;
-    bmpFileHeader.bfOffBits = 54;
+    bmpFileHeader.bfOffBits = 0;
     fwrite(&bmpFileHeader, sizeof(byte), 14, outfile);
     bmpInfoHeader.biSize = 40;
     bmpInfoHeader.biWidth = 1200;
@@ -137,12 +141,142 @@ int main()
                 bytesRead += 3;
             }
         }
+        int w = fwrite(bmpdata,sizeof(byte), (bmpInfoHeader.biWidth * bmpInfoHeader.biHeight * 3),outfile);
+        printf("%d\n", w);
+        munmap(chunkData,(sizeof(chunk) * (totalbytes/3)));
+        fclose(outfile);
     }
     else
     {
-
+        int child1 = fork();
+        if(child1 == 0)
+        {
+            int child2 = fork();
+            if(child2 == 0)
+            {
+                int child3 = fork();
+                if(child3 == 0)
+                {
+                    int bmpI = (bmpInfoHeader.biSizeImage/4)*3;
+                    bytesRead = 0;
+                    for(index = (header.rowbyte_quarter[2]/3); index < ((header.rowbyte_quarter[3]-header.rowbyte_quarter[2])/3);index++) //reads in all bytes in multiples of chunks
+                    {
+                        chunk currChunk = chunkData[index];
+                        col currColor = colors[currChunk.color_index];
+                        short count = currChunk.count;
+                        sum += count;
+                        for(int i = 0; i < count;i++) //for each chunk add count many pixels of the specified color
+                        {
+                            if(bytesRead == (bmpInfoHeader.biWidth * 3))//if at the end of the width added needed padding to file
+                            {
+                                for(int j = 0; j < padding; j++)
+                                {
+                                    bmpdata[bmpI++] = 0;
+                                    bytesRead++;
+                                }
+                                bytesRead = 0;
+                            }
+                            bmpdata[bmpI++] = (byte)currColor.b;
+                            bmpdata[bmpI++] = (byte)currColor.g;
+                            bmpdata[bmpI++] = (byte)currColor.r;
+                            bytesRead += 3;
+                        }
+                    }
+                }
+                if(child3 > 0)
+                {
+                    int bmpI = (bmpInfoHeader.biSizeImage/4)*2;
+                    bytesRead = 0;
+                    for(index = (header.rowbyte_quarter[1]/3); index < ((header.rowbyte_quarter[2]-header.rowbyte_quarter[1])/3);index++) //reads in all bytes in multiples of chunks
+                    {
+                        chunk currChunk = chunkData[index];
+                        col currColor = colors[currChunk.color_index];
+                        short count = currChunk.count;
+                        sum += count;
+                        for(int i = 0; i < count;i++) //for each chunk add count many pixels of the specified color
+                        {
+                            if(bytesRead == (bmpInfoHeader.biWidth * 3))//if at the end of the width added needed padding to file
+                            {
+                                for(int j = 0; j < padding; j++)
+                                {
+                                    bmpdata[bmpI++] = 0;
+                                    bytesRead++;
+                                }
+                                bytesRead = 0;
+                            }
+                            bmpdata[bmpI++] = (byte)currColor.b;
+                            bmpdata[bmpI++] = (byte)currColor.g;
+                            bmpdata[bmpI++] = (byte)currColor.r;
+                            bytesRead += 3;
+                        }
+                    }
+                    wait(NULL);
+                }
+            }
+            if(child2 > 0)
+            {
+                int bmpI = bmpInfoHeader.biSizeImage/4;
+                bytesRead = 0;
+                for(index = (header.rowbyte_quarter[0]/3); index < ((header.rowbyte_quarter[1]-header.rowbyte_quarter[0])/3);index++) //reads in all bytes in multiples of chunks
+                {
+                    chunk currChunk = chunkData[index];
+                    col currColor = colors[currChunk.color_index];
+                    short count = currChunk.count;
+                    sum += count;
+                    for(int i = 0; i < count;i++) //for each chunk add count many pixels of the specified color
+                    {
+                        if(bytesRead == (bmpInfoHeader.biWidth * 3))//if at the end of the width added needed padding to file
+                        {
+                            for(int j = 0; j < padding; j++)
+                            {
+                                bmpdata[bmpI++] = 0;
+                                bytesRead++;
+                            }
+                            bytesRead = 0;
+                        }
+                        bmpdata[bmpI++] = (byte)currColor.b;
+                        bmpdata[bmpI++] = (byte)currColor.g;
+                        bmpdata[bmpI++] = (byte)currColor.r;
+                        bytesRead += 3;
+                    }
+                }
+                wait(NULL);
+            }
+        }
+        if(child1 > 0)
+        {
+            int bmpI = 0;
+            bytesRead = 0;
+            for(index = 0; index < (header.rowbyte_quarter[0]/3);index++) //reads in all bytes in multiples of chunks
+            {
+                chunk currChunk = chunkData[index];
+                col currColor = colors[currChunk.color_index];
+                short count = currChunk.count;
+                sum += count;
+                for(int i = 0; i < count;i++) //for each chunk add count many pixels of the specified color
+                {
+                    if(bytesRead == (bmpInfoHeader.biWidth * 3))//if at the end of the width added needed padding to file
+                    {
+                        for(int j = 0; j < padding; j++)
+                        {
+                            bmpdata[bmpI++] = 0;
+                            bytesRead++;
+                        }
+                        bytesRead = 0;
+                    }
+                    bmpdata[bmpI++] = (byte)currColor.b;
+                    bmpdata[bmpI++] = (byte)currColor.g;
+                    bmpdata[bmpI++] = (byte)currColor.r;
+                    bytesRead += 3;
+                }
+            }
+            wait(NULL);
+            int w = fwrite(bmpdata,sizeof(byte), (bmpInfoHeader.biWidth * bmpInfoHeader.biHeight * 3),outfile);
+            printf("%d\n", w);
+            munmap(chunkData,(sizeof(chunk) * (totalbytes/3)));
+            fclose(outfile);
+        }
     }
-    int w = fwrite(bmpdata,sizeof(byte), (bmpInfoHeader.biWidth * bmpInfoHeader.biHeight * 3),outfile);
-    printf("%d\n", w);
+    
     return 0;
 }

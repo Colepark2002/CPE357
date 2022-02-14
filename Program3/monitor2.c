@@ -48,8 +48,8 @@ int main(int argc, char* argv[])
         else
         {
             char input[PATH_MAX];
-            printf("\033[0;33m");
-            printf("%s",argv[0]);
+            printf("\033[0;34m");
+            printf("My Sick Prog3");
             printf("\033[0m");
             printf("$");
             int scan = scanf("%s", input);

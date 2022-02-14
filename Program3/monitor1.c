@@ -73,6 +73,16 @@ int main()
             }
             else
             {
+                struct stat;
+                int statRet = stat(input, &stat);
+                if(statRet == -1)
+                {
+                    fprintf(stderr, "Unable to stat: %s\n", input);
+                }
+                else
+                {
+                    fprintf(stderr,"\n");
+                }
                 *used = 1;
             }
         }

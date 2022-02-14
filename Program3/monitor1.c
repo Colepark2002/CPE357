@@ -8,27 +8,26 @@
 #include <signal.h>
 #include <sys/mman.h>
 #include <string.h>
+#include <time.h>
 
 void handler(int i)
 {
-    fprintf(stderr,"\nNice try!\n");
     return;
 }
 
 
-int main()
+int main(int argc, char* argv[])
 {
+    int *used = mmap(NULL,sizeof(int), PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
+    *(used) = 0;
+
     DIR *currDir;
     int pid;
+    int ppid = getpid();
     pid = fork();
     
-    if(pid != 0)
-    {
-        fprintf(stderr, "Parent PID: %d\n", getpid());
-    }
     
-    int *used = mmap(NULL,sizeof(int), PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
-    *used = 0;
+    
     
     while(1)
     {
@@ -44,16 +43,21 @@ int main()
         if(pid != 0)
         {
             sleep(10);
-            if(*used == 1)
+            if(*(used) == 0)
             {
                 kill(pid,9);
                 *used = 0;
                 munmap(used, sizeof(int));
+                return 0;
             }
         }
         else
         {
             char input[PATH_MAX];
+            printf("\033[0;33m");
+            printf("%s",argv[0]);
+            printf("\033[0m");
+            printf("$");
             int scan = scanf("%s", input);
             char ls[5] = "list";
             char *quit = "q";
@@ -65,28 +69,41 @@ int main()
                 {
                     printf("%s\n", file->d_name);
                 }
-                *used = 1;
+                *(used) = 1;
             }
             else if(strcmp(input,quit) == 0)
             {
-                return;
+                *(used) = 0;
+                munmap(used,sizeof(int));
+                kill(ppid,9);
+                return 0;
             }
-            else
+            else // statting file and printing stats
             {
-                struct stat;
-                int statRet = stat(input, &stat);
+                struct stat sb;
+                int statRet = stat(input, &sb);
                 if(statRet == -1)
                 {
                     fprintf(stderr, "Unable to stat: %s\n", input);
                 }
-                else
+                else 
                 {
-                    fprintf(stderr,"\n");
+                    fprintf(stderr,"I-node number:                  %ld\n",(long)sb.st_ino);
+                    fprintf(stderr,"Mode:                           %lo (octal)\n",(unsigned long)sb.st_mode);
+                    fprintf(stderr,"Link Count:                     %ld\n",(long)sb.st_nlink);
+                    fprintf(stderr,"Ownership:                      UID=%ld   GID=%ld\n",(long)sb.st_uid,(long)sb.st_gid);
+                    fprintf(stderr,"Preferred I/O Block Size:       %ld bytes\n",(long)sb.st_blksize);
+                    fprintf(stderr,"File Size:                      %lld\n",(long long)sb.st_size);
+                    fprintf(stderr,"Blocks Allocated:               %lld\n",(long long)sb.st_blocks);
+                    fprintf(stderr,"Last Status Change:             %s\n",ctime(&sb.st_ctime));
+                    fprintf(stderr,"Last File Access:               %s\n",ctime(&sb.st_atime));
+                    fprintf(stderr,"Last File Modification:         %s\n",ctime(&sb.st_mtime));
                 }
-                *used = 1;
-            }
-        }
-            
+                *(used) = 1;
+        
+            }    
+        }  
     }
     return 0;
+
 }

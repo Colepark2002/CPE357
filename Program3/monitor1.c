@@ -46,6 +46,7 @@ int main(int argc, char* argv[])
             if(*(used) == 0)
             {
                 kill(pid,9);
+                wait(NULL);
                 *used = 0;
                 munmap(used, sizeof(int));
                 return 0;

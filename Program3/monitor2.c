@@ -10,10 +10,6 @@
 #include <string.h>
 #include <time.h>
 
-void handler(int i)
-{
-    return;
-}
 
 
 int main(int argc, char* argv[])
@@ -31,18 +27,11 @@ int main(int argc, char* argv[])
     
     while(1)
     {
-        signal(2,handler);
-        signal(3,handler);
-        signal(6,handler);
-        signal(9,handler);
-        signal(15,handler);
-        signal(18,handler);
-        signal(19,handler);
-        signal(20,handler);
         
         if(pid != 0)
         {
             wait(NULL);
+            fprintf(stderr,"Recreated Child\n");
             pid = fork();
         }
         else
@@ -69,7 +58,7 @@ int main(int argc, char* argv[])
             {
                 *(used) = 0;
                 munmap(used,sizeof(int));
-                kill(ppid,9);
+                kill(ppid,SIGINT);
                 return 0;
             }
             else // statting file and printing stats

@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
             printf("\033[0;34m");
             printf("My Sick Prog3");
             printf("\033[0m");
-            printf("$");
+            printf("$ ");
             int scan = scanf("%s", input);
             char ls[5] = "list";
             char *quit = "q";

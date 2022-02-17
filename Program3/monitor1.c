@@ -21,6 +21,18 @@ int main(int argc, char* argv[])
     int *used = mmap(NULL,sizeof(int), PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
     *(used) = 0;
 
+    struct sigaction sa = {0};
+    sa.sa_flags = SA_RESTART;
+    sa.sa_handler = &handler;
+    sigaction(2,&sa,NULL);
+    sigaction(3,&sa,NULL);
+    sigaction(6,&sa,NULL);
+    sigaction(9,&sa,NULL);
+    sigaction(15,&sa,NULL);
+    sigaction(18,&sa,NULL);
+    sigaction(19,&sa,NULL);
+    sigaction(20,&sa,NULL);
+
     DIR *currDir;
     int pid;
     int ppid = getpid();
@@ -31,14 +43,6 @@ int main(int argc, char* argv[])
     
     while(1)
     {
-        signal(2,handler);
-        signal(3,handler);
-        signal(6,handler);
-        signal(9,handler);
-        signal(15,handler);
-        signal(18,handler);
-        signal(19,handler);
-        signal(20,handler);
         
         if(pid != 0)
         {
@@ -58,7 +62,7 @@ int main(int argc, char* argv[])
             printf("\033[0;34m");
             printf("My Sick Prog3");
             printf("\033[0m");
-            printf("$");
+            printf("$ ");
             int scan = scanf("%s", input);
             char ls[5] = "list";
             char *quit = "q";

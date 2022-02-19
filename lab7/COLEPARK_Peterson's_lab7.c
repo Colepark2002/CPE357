@@ -48,8 +48,8 @@ int main(int argc, char* argv[])
        while(1)
        {
             flag[0] = 1;
-            turn = 1;
-            while(flag[1] == 1 && turn == 1);
+            *turn = 1;
+            while(flag[1] == 1 && *turn == 1);
             strcpy(prntArr, memArr);
             printf("%s\n", prntArr);
             flag[0] = 0;
@@ -62,17 +62,17 @@ int main(int argc, char* argv[])
         while(1)
         {
             flag[1] = 1;
-            turn = 0;
-            while(flag[0] == 1 && turn == 0); 
-            if (sentenceNum == 0)
+            *turn = 0;
+            while(flag[0] == 1 && *turn == 0); 
+            if (*sentenceNum == 0)
             {
                 strcpy(memArr,sent1);
-                sentenceNum = 1;
+                *sentenceNum = 1;
             }
             else
             {
                 strcpy(memArr, sent2);
-                sentenceNum = 0;
+                *sentenceNum = 0;
             }
             flag[1] = 0;
         }

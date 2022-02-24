@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+typedef unsigned char byte;
+
 typedef struct mypipe 
 { 
     byte* pipebuffer; 
@@ -11,9 +13,10 @@ typedef struct mypipe
 
 
 //initializes (malloc) the pipe with a size of "size" and sets start and end. 
-void init_pipe(mypipe* pipe, int size)
+void init(mypipe* pipe, int size)
 {
     pipe->buffersize = size;
+    pipe->pipebuffer = (byte*)malloc(sizeof(byte) * size);
     pipe->end_occupied = 0;
     pipe->start_occupied = 0;
     return;
@@ -23,11 +26,12 @@ void init_pipe(mypipe* pipe, int size)
 int mywrite(mypipe *pipe, byte* buffer, int size)
 {
     int i;
-    pipe->end_occupied = (pipe->end_occupied + size) % pipe->buffersize;
+    
     for (i = 0; i < size; i++)
     {
-        pipe->pipebuffer[(pipe->start_occupied+i)%pipe->buffersize] = buffer[i];
+        pipe->pipebuffer[((pipe->end_occupied+i)%pipe->buffersize)] = buffer[i];
     }
+    pipe->end_occupied = (pipe->end_occupied + size) % pipe->buffersize;
     return size;
 }
  
@@ -66,4 +70,5 @@ int main()
     mywrite(&pipeA, "and now we test the carryover", 30); 
     myread(&pipeA, text, 30); 
     printf("%s\n", text); 
+    return 0;
 }

@@ -71,27 +71,6 @@ void find(char* search, int s, char* filetype)
         }
 
     }
-    
-    void killMethod(int childNum)
-    {
-        kill(childrenArr[childNum], 2);
-    }
-
-    void quitMethod()
-    {
-        for(int i = 0; i < 10; i++)
-        {
-            if(childrenArr[i] != 0)
-            {
-                killMethod(i+1);
-            }
-        }
-    }
-
-    
-
-
-
 
     time_t end = time();
     int sec, h, m, s;    
@@ -102,6 +81,22 @@ void find(char* search, int s, char* filetype)
 	printf("H:M:S - %d:%d:%d\n",h,m,s);
 	
 	return;
+}
+
+void killMethod(int childNum)
+{
+    kill(childrenArr[childNum], 2);
+}
+
+void quitMethod()
+{
+    for(int i = 0; i < 10; i++)
+    {
+        if(childrenArr[i] != 0)
+        {
+                illMethod(i+1);
+        }
+    }
 }
 
 

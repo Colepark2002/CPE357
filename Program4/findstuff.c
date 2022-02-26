@@ -94,7 +94,7 @@ void quitMethod()
     {
         if(childrenArr[i] != 0)
         {
-                illMethod(i+1);
+            killMethod(i+1);
         }
     }
 }

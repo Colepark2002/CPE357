@@ -85,7 +85,7 @@ void find(char* search, int s, char* filetype)
 
 void killMethod(int childNum)
 {
-    kill(childrenArr[childNum], 2);
+    kill(childrenArr[childNum-0], 2);
 }
 
 void quitMethod()

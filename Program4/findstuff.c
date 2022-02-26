@@ -11,6 +11,8 @@
 #include <time.h>
 
 
+int *childrenArr[10];
+
 void searchDir(char* search, char* dirname, int index, char** paths)
 {
     DIR* dir = opendir(dirname);
@@ -68,6 +70,22 @@ void find(char* search, int s, char* filetype)
             }
         }
 
+    }
+    
+    void killMethod(int childNum)
+    {
+        kill(childrenArr[childNum], 2);
+    }
+
+    void quitMethod()
+    {
+        for(int i = 0; i < 10; i++)
+        {
+            if(childrenArr[i] != 0)
+            {
+                killMethod(i+1);
+            }
+        }
     }
 
     

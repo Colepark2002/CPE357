@@ -16,6 +16,7 @@ int *childrenArr[10];
 int childInd = 0;
 int pfd[2];
 int childPipes[10][2];
+int ppid;
 
 void searchDir(char* search, char* dirname, int index, char** paths)
 {
@@ -39,6 +40,7 @@ void searchDir(char* search, char* dirname, int index, char** paths)
 void find(char* search, int s, char* filetype)
 {
     time_t start = time();
+    int i = 0;
 
     if(search[0] == '"')
     {
@@ -55,10 +57,11 @@ void find(char* search, int s, char* filetype)
     else
     {
         char *paths[PATH_MAX];
-        int i = 0;
+        
         if(s)
         {
             searchDir(search,".", i, paths);
+            i++; 
         }
         else
         {
@@ -72,6 +75,15 @@ void find(char* search, int s, char* filetype)
                     paths[i++] = file->dname;
                 }
             }
+            
+        }
+        if(i == 0)
+        {
+            fprintf(stderr, "No file found");
+        }
+        else
+        {
+            fprintf(stderr, "Found file specified");
         }
 
     }
@@ -85,7 +97,7 @@ void find(char* search, int s, char* filetype)
 	s = (sec -(3600*h)-(m*60));
     ms = (sec - (3600*h) - (m*60) - s) * 100;
 	printf("H:M:S - %d:%d:%d:%d\n",h,m,s,ms);
-	
+    
 	return;
 }
 
@@ -94,7 +106,7 @@ void killMethod(int childNum)
     kill(childrenArr[childNum-1], 2);
 }
 
-void quitMethod()
+void quitMethod() // should have the parent kill all children then itself
 {
     for(int i = 0; i < 10; i++)
     {
@@ -105,6 +117,10 @@ void quitMethod()
     }
 }
 
+void listMethod()
+{
+    //should list the children and what they do 
+}
 
 
 
@@ -112,13 +128,13 @@ void quitMethod()
 int main()
 {
     
-
-    pipe(pfd);
+    ppid = getpid();
+    pipe(pfd); // parents pipe
     char text[MAXINPUT];
     
-    int realstdin = dup(STDIN_FILENO);
+    int realstdin = dup(STDIN_FILENO); // saves stdin 
 
-    for(int i = 0; i < 10; i++)
+    for(int i = 0; i < 10; i++) // sets up all pipes for potential children to read from parents fd[1] and writes to parents fd[0]
     {
         pipe(childPipes[i]);
         dup2(pfd[1], childPipes[i][0]);
@@ -133,6 +149,8 @@ int main()
         printf("$ ");
         read(STDIN_FILENO, text, MAXINPUT);
         write(pfd[1], text, MAXINPUT);
+        dup2(realstdin, STDIN_FILENO);
+        
         if((childrenArr[childInd++] = fork()) == 0)
         {
             char input[MAXINPUT];
@@ -147,7 +165,28 @@ int main()
             }
             if(strcmp(args[0], "find") == 0)
             {
-
+                if(args[2])
+                {
+                    if(args[2][0] == '-' && args[2][1] == 's')
+                    {
+                        find(args[1], 1, NULL);
+                    }
+                    else
+                    {
+                        if(args[3])
+                        {
+                            find(args[1], 1, args[2]);
+                        }
+                        else
+                        {
+                            find(args[1], 0, args[2]);
+                        }
+                    }
+                }
+                else
+                {
+                    find(args[1], 0, NULL);
+                }
             }
             else if(strcmp(args[0], "quit") == 0 || strcmp(args[0], "q") == 0)
             {
@@ -158,8 +197,21 @@ int main()
                 int num = strtol(args[1]);
                 killMethod(num);
             }
+            else if(strcmp(args[0], "list") == 0)
+            {
+                listMethod();
+            }
+            else
+            {
+                perror("Invalid input\n")
+                exit(EXIT_FAILURE);
+            }
         }
-        waitpid(childrenArr[childInd-1]);
+        else
+        {
+            waitpid(childrenArr[childInd-1], WNOHANG);
+        }
+        
     }
     
     return 0;

@@ -10,43 +10,53 @@
 #include <string.h>
 #include <time.h>
 
-#define MAXINPUT = 4112
+#define MAXINPUT 4112
 
-int *childrenArr[10];
-int childInd = 0;
-int pfd[2];
-int childPipes[10][2];
-int ppid;
+int childrenArr[10];  // list of children pids 
+int childInd = 0; // keeps track of children 
+int pfd[2]; // parents file descriptors
+int childPipes[10][2]; // array of children's pipes fd's 
+int ppid; // parents proccess id
+
+void signal1(int siginf)
+{
+    // should change STDIN_FILENO to pfd[0] and print information from child
+}
+
+void signal2(int sig)
+{
+    // should be used to run the list or quit command so that it can be run in parent whoo has all PID's
+}
 
 void searchDir(char* search, char* dirname, int index, char** paths)
 {
     DIR* dir = opendir(dirname);
     struct dirent *file;
     struct stat sb;
-    while((file = readdir(currDir)) != NULL)
+    while((file = readdir(dir)) != NULL)
     {
-        stat(file->dname, &sb);
+        stat(file->d_name, &sb);
         if(S_ISDIR(sb.st_mode))
         {
-            searchDir(search, file->dname, index++, paths);
+            searchDir(search, file->d_name, index++, paths);
         }
-        if(strcmp(search, file->dname) == 0)
+        if(strcmp(search, file->d_name) == 0)
         {
-            paths[index++] = file->dname;
+            paths[index++] = file->d_name;
         }
     }
 }
 
 void find(char* search, int s, char* filetype)
 {
-    time_t start = time();
+    time_t start = clock();
     int i = 0;
 
-    if(search[0] == '"')
+    if(search[0] == '"') // if looking for a word in a file
     {
-        if(s)
+        if(s) // if subdirectory search is on run recursive version
         {
-
+            
         }
         else
         {
@@ -58,7 +68,7 @@ void find(char* search, int s, char* filetype)
     {
         char *paths[PATH_MAX];
         
-        if(s)
+        if(s) // if subdirectory search is on run recursive function
         {
             searchDir(search,".", i, paths);
             i++; 
@@ -68,11 +78,11 @@ void find(char* search, int s, char* filetype)
             
             DIR* dir = opendir(".");
             struct dirent *file;
-            while((file = readdir(currDir)) != NULL)
+            while((file = readdir(dir)) != NULL)
             {
-                if(strcmp(search, file->dname) == 0)
+                if(strcmp(search, file->d_name) == 0)
                 {
-                    paths[i++] = file->dname;
+                    paths[i++] = file->d_name;
                 }
             }
             
@@ -88,20 +98,20 @@ void find(char* search, int s, char* filetype)
 
     }
 
-    time_t end = time();
+    time_t end = clock();
     float sec;
-    int h, m, s, ms;    
+    int h, m, ss, ms;    
     sec = (end - start)/CLOCKS_PER_SEC;
 	h = (sec/3600);	
 	m = (sec -(3600*h))/60;
-	s = (sec -(3600*h)-(m*60));
+	ss = (sec -(3600*h)-(m*60));
     ms = (sec - (3600*h) - (m*60) - s) * 100;
-	printf("H:M:S - %d:%d:%d:%d\n",h,m,s,ms);
+	printf("H:M:S - %d:%d:%d:%d\n",h,m,ss,ms);
     
 	return;
 }
 
-void killMethod(int childNum)
+void killMethod(int childNum) // method to kill children from shell
 {
     kill(childrenArr[childNum-1], 2);
 }
@@ -143,10 +153,10 @@ int main()
 
     while(1)
     {
-        printf("\033[0;34m");
-        printf("findstuff");
-        printf("\033[0m");
-        printf("$ ");
+        fprintf(stderr, "\033[0;34m");
+        fprintf(stderr, "findstuff");
+        fprintf(stderr,"\033[0m");
+        fprintf(stderr, "$ ");
         read(STDIN_FILENO, text, MAXINPUT);
         write(pfd[1], text, MAXINPUT);
         dup2(realstdin, STDIN_FILENO);
@@ -157,7 +167,7 @@ int main()
             char *args[4];
             int i = 0;
             read(childPipes[childInd-1][0], input, MAXINPUT);
-            char* token = strtoK(input, " ");
+            char* token = strtok(input, " ");
             while(token != NULL)
             {
                 args[i++] = token;
@@ -192,9 +202,9 @@ int main()
             {
                 quitMethod();
             }
-            else if(strcmp([args[0], "kill"]) == 0)
+            else if(strcmp(args[0], "kill") == 0)
             {
-                int num = strtol(args[1]);
+                int num = atol(args[1]);
                 killMethod(num);
             }
             else if(strcmp(args[0], "list") == 0)
@@ -203,13 +213,15 @@ int main()
             }
             else
             {
-                perror("Invalid input\n")
+                perror("Invalid input\n");
                 exit(EXIT_FAILURE);
             }
+            return 0;
         }
         else
         {
-            waitpid(childrenArr[childInd-1], WNOHANG);
+            int status;
+            waitpid(childrenArr[childInd-1],&status, WNOHANG);
         }
         
     }

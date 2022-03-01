@@ -10,8 +10,12 @@
 #include <string.h>
 #include <time.h>
 
+#define MAXINPUT = 4112
 
 int *childrenArr[10];
+int childInd = 0;
+int pfd[2];
+int childPipes[10][2];
 
 void searchDir(char* search, char* dirname, int index, char** paths)
 {
@@ -73,12 +77,14 @@ void find(char* search, int s, char* filetype)
     }
 
     time_t end = time();
-    int sec, h, m, s;    
+    float sec;
+    int h, m, s, ms;    
     sec = (end - start)/CLOCKS_PER_SEC;
 	h = (sec/3600);	
 	m = (sec -(3600*h))/60;
 	s = (sec -(3600*h)-(m*60));
-	printf("H:M:S - %d:%d:%d\n",h,m,s);
+    ms = (sec - (3600*h) - (m*60) - s) * 100;
+	printf("H:M:S - %d:%d:%d:%d\n",h,m,s,ms);
 	
 	return;
 }
@@ -103,15 +109,58 @@ void quitMethod()
 
 
 
-
-
-
-
 int main()
 {
-    printf("\033[0;34m");
-    printf("findstuff");
-    printf("\033[0m");
-    printf("$ ");
+    
+
+    pipe(pfd);
+    char text[MAXINPUT];
+    
+    int realstdin = dup(STDIN_FILENO);
+
+    for(int i = 0; i < 10; i++)
+    {
+        pipe(childPipes[i]);
+        dup2(pfd[1], childPipes[i][0]);
+        dup2(pfd[0], childPipes[i][1]);
+    }
+
+    while(1)
+    {
+        printf("\033[0;34m");
+        printf("findstuff");
+        printf("\033[0m");
+        printf("$ ");
+        read(STDIN_FILENO, text, MAXINPUT);
+        write(pfd[1], text, MAXINPUT);
+        if((childrenArr[childInd++] = fork()) == 0)
+        {
+            char input[MAXINPUT];
+            char *args[4];
+            int i = 0;
+            read(childPipes[childInd-1][0], input, MAXINPUT);
+            char* token = strtoK(input, " ");
+            while(token != NULL)
+            {
+                args[i++] = token;
+                token = strtok(NULL, " ");
+            }
+            if(strcmp(args[0], "find") == 0)
+            {
+
+            }
+            else if(strcmp(args[0], "quit") == 0 || strcmp(args[0], "q") == 0)
+            {
+                quitMethod();
+            }
+            else if(strcmp([args[0], "kill"]) == 0)
+            {
+                int num = strtol(args[1]);
+                killMethod(num);
+            }
+        }
+        waitpid(childrenArr[childInd-1]);
+    }
+    
     return 0;
 }

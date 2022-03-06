@@ -14,10 +14,8 @@ int main(int argc, char* argv[])
             execv(argv[1], (char*[]){argv[1], i, programs, NULL});
             return 0;
         }
-        else
-        {
-            wait(NULL);
-        }
         
     }
+    wait(NULL);
+    return 0;
 }

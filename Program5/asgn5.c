@@ -67,6 +67,27 @@ void quadratic_matrix_multiplication(float *A,float *B,float *C)
 void synch(int par_id,int par_count,int *ready)
 {
     //TODO: synch algorithm. make sure, ALL processes get stuck here until all ARE here
+    ready[par_id] = 1;
+    while(1)
+    {
+        int i;
+        for(i = 0; i < par_count; i++)
+        {
+            if (ready[i] == 0)
+            {
+                break;
+            }
+        }
+        if(i == par_count)
+        {
+            break;
+        }
+        if(par_id == (par_count - 1))
+        {
+            break;
+        }
+    }
+    ready[par_id] = 0;
 }
 //
 
@@ -89,11 +110,31 @@ int main(int argc, char *argv[])
     if(par_id==0)
         {
             //TODO: init the shared memory for A,B,C, ready. shm_open with O_CREAT here! then ftruncate! then mmap
+            fd[0] = shm_open("matrixA", O_RDWR | O_CREAT, 0777);
+            fd[1] = shm_open("matrixB", O_RDWR | O_CREAT, 0777);
+            fd[2] = shm_open("matrixC", O_RDWR | O_CREAT, 0777);
+            fd[3] = shm_open("Ready", O_RDWR | O_CREAT, 0777);
+            ftruncate(fd[0], MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float));
+            ftruncate(fd[1], MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float));
+            ftruncate(fd[2], MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float));
+            ftruncate(fd[3], sizeof(int) * par_count);
+            A = (float*)mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[0], 0);
+            B = (float*)mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[1], 0);
+            C = (float*)mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[2], 0);
+            ready = (int*)mmap(NULL, sizeof(int) * par_count, PROT_READ | PROT_WRITE, MAP_SHARED, fd[3], 0);
         }
     else
         {
             //TODO: init the shared memory for A,B,C, ready. shm_open withOUT O_CREAT here! NO ftruncate! but yes to mmap
             sleep(2); //needed for initalizing synch
+            fd[0] = shm_open("matrixA", O_RDWR, 0777);
+            fd[1] = shm_open("matrixB", O_RDWR, 0777);
+            fd[2] = shm_open("matrixC", O_RDWR, 0777);
+            fd[3] = shm_open("Ready", O_RDWR, 0777);
+            A = (float*)mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[0], 0);
+            B = (float*)mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[1], 0);
+            C = (float*)mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[2], 0);
+            ready = (int*)mmap(NULL, sizeof(int) * par_count, PROT_READ | PROT_WRITE, MAP_SHARED, fd[3], 0);
         }
     synch(par_id,par_count,ready);
 
@@ -114,7 +155,7 @@ int main(int argc, char *argv[])
     //lets test the result:
     float M[MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY];
     quadratic_matrix_multiplication(A, B, M);
-
+    synch(par_id, par_count, ready); // added
     if (quadratic_matrix_compare(C, M))
         print("full points!\n");
     else
@@ -126,6 +167,10 @@ int main(int argc, char *argv[])
     shm_unlink("matrixA");
     shm_unlink("matrixB");
     shm_unlink("matrixC");
-    shm_unlink("synchobject");
+    shm_unlink("Ready"); // changed
+    munmap(A, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float)); // added
+    munmap(B, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float)); // added
+    munmap(C, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float)); // added
+    munmap(ready, sizeof(int) * par_count); // added
     return 0;    
 }

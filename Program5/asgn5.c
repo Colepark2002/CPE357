@@ -63,6 +63,32 @@ void quadratic_matrix_multiplication(float *A,float *B,float *C)
                 }
 }
 
+void synch(int par_id,int par_count,int *ready)
+{
+    //TODO: synch algorithm. make sure, ALL processes get stuck here until all ARE here
+    ready[par_id] = 1;
+    while(1)
+    {
+        int i;
+        for(i = 0; i < par_count; i++)
+        {
+            if (ready[i] == 0)
+            {
+                break;
+            }
+        }
+        if(i == par_count)
+        {
+            break;
+        }
+        if(par_id == (par_count - 1))
+        {
+            break;
+        }
+    }
+    ready[par_id] = 0;
+}
+
 void quadratic_matrix_multiplication_parallel(int par_id, int par_count,float* A,float * B,float* C, int* ready)
 {
     if (par_id == 0)
@@ -118,31 +144,7 @@ void quadratic_matrix_multiplication_parallel(int par_id, int par_count,float* A
 }
 //
 
-void synch(int par_id,int par_count,int *ready)
-{
-    //TODO: synch algorithm. make sure, ALL processes get stuck here until all ARE here
-    ready[par_id] = 1;
-    while(1)
-    {
-        int i;
-        for(i = 0; i < par_count; i++)
-        {
-            if (ready[i] == 0)
-            {
-                break;
-            }
-        }
-        if(i == par_count)
-        {
-            break;
-        }
-        if(par_id == (par_count - 1))
-        {
-            break;
-        }
-    }
-    ready[par_id] = 0;
-}
+
 //
 
 int main(int argc, char *argv[])
@@ -217,9 +219,9 @@ int main(int argc, char *argv[])
     quadratic_matrix_multiplication(A, B, M);
     synch(par_id, par_count, ready); // added
     if (quadratic_matrix_compare(C, M))
-        print("full points!\n");
+        printf("full points!\n");
     else
-        print("buuug!\n");
+        printf("buuug!\n");
     close(fd[0]);
     close(fd[1]);
     close(fd[2]);

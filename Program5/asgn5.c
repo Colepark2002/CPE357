@@ -169,9 +169,10 @@ int main(int argc, char *argv[])
     {
         if(par_id == 0)
         {
-            printf("Too many programs try a value between 1-10\n")
+            perror("Too many programs try a value between 1-10");
+            return 0;
         }
-        return 0;
+        exit(EXIT_FAILURE);
     }
     
     int fd[5];

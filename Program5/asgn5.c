@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
     synch(par_id,par_count,ready);
     if (par_id == (par_count -1))
     {
-        printf("Multiplication took %f seconds\n", (*time)/CLOCKS_PER_SEC);
+        printf("Matrix Multiplication took %f seconds\n", (*time)/CLOCKS_PER_SEC);
     }
     if(par_id==0)
         quadratic_matrix_print(C);

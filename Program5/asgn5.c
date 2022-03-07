@@ -62,6 +62,60 @@ void quadratic_matrix_multiplication(float *A,float *B,float *C)
                     + c*MATRIX_DIMENSION_XY]; 
                 }
 }
+
+void quadratic_matrix_multiplication_parallel(int par_id, int par_count,float* A,float * B,float* C, int* ready)
+{
+    if (par_id == 0)
+    {
+        //nullify the result matrix first
+        for(int a = 0;a<MATRIX_DIMENSION_XY;a++)
+            for(int b = 0;b<MATRIX_DIMENSION_XY;b++)
+                C[a + b*MATRIX_DIMENSION_XY] = 0.0;
+    }
+    synch(par_id, par_count, ready);
+    int rows;
+    if(MATRIX_DIMENSION_XY % par_count == 0)
+    {
+        rows = MATRIX_DIMENSION_XY/par_count;
+        //multiply
+        for(int a = 0; a<MATRIX_DIMENSION_XY; a++) // over all cols a
+            for(int b = (par_id * rows); b<(par_id * rows) + rows; b++) // over all rows b
+                for(int c = 0;c<MATRIX_DIMENSION_XY;c++) // over all rows/cols left
+                    {
+                        C[a + b*MATRIX_DIMENSION_XY] += A[c + b*MATRIX_DIMENSION_XY] * B[a 
+                        + c*MATRIX_DIMENSION_XY]; 
+                    }
+    }
+    else
+    {
+        rows = MATRIX_DIMENSION_XY/par_count;
+        if(par_id == 0)
+        {
+            rows += MATRIX_DIMENSION_XY % par_count;
+            //multiply
+            for(int a = 0; a<MATRIX_DIMENSION_XY; a++) // over all cols a
+                for(int b = 0; b<(par_id * rows) + rows + (MATRIX_DIMENSION_XY % par_count); b++) // over all rows b
+                    for(int c = 0;c<MATRIX_DIMENSION_XY;c++) // over all rows/cols left
+                        {
+                            C[a + b*MATRIX_DIMENSION_XY] += A[c + b*MATRIX_DIMENSION_XY] * B[a 
+                            + c*MATRIX_DIMENSION_XY]; 
+                        }
+        }
+        else
+        {
+            //multiply
+            for(int a = 0; a<MATRIX_DIMENSION_XY; a++) // over all cols a
+                for(int b = (par_id * rows) + (MATRIX_DIMENSION_XY % par_count); b<(par_id * rows) + rows + (MATRIX_DIMENSION_XY % par_count); b++) // over all rows b
+                    for(int c = 0;c<MATRIX_DIMENSION_XY;c++) // over all rows/cols left
+                        {
+                            C[a + b*MATRIX_DIMENSION_XY] += A[c + b*MATRIX_DIMENSION_XY] * B[a 
+                            + c*MATRIX_DIMENSION_XY]; 
+                        }
+        }
+    }
+
+    
+}
 //
 
 void synch(int par_id,int par_count,int *ready)
@@ -140,11 +194,17 @@ int main(int argc, char *argv[])
 
     if(par_id==0)
         {
-        //TODO: initialize the matrices A and B
+            for(int i = 0; i < MATRIX_DIMENSION_XY; i++)
+            {
+                int a = rand();
+                int b = rand();
+                A[i] = a;
+                B[i] = b;
+            }
         }
     synch(par_id,par_count,ready);
 
-    //TODO: quadratic_matrix_multiplication_parallel(par_id, par_count,A,B,C, ...);
+    quadratic_matrix_multiplication_parallel(par_id, par_count,A,B,C, ready);
     synch(par_id,par_count,ready);
 
     if(par_id==0)

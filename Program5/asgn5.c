@@ -165,6 +165,14 @@ int main(int argc, char *argv[])
         // strcpy(shared_mem_matrix,argv[3]);
         }
     if(par_count==1){printf("only one process\n");}
+    if(par_count > 10)
+    {
+        if(par_id == 0)
+        {
+            printf("Too many programs try a value between 1-10\n")
+        }
+        return 0;
+    }
     
     int fd[5];
     if(par_id==0)

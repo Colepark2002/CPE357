@@ -8,6 +8,7 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <time.h>
 #define MATRIX_DIMENSION_XY 10
 //SEARCH FOR TODO
 //
@@ -153,6 +154,9 @@ int main(int argc, char *argv[])
     int par_count = 1; // the amount of processes
     float *A,*B,*C; //matrices A,B and C
     int *ready; //needed for synch
+    float *time;
+    time_t start = clock();
+    time_t end;
     if(argc!=3){printf("no shared\n");}
     else
         {
@@ -162,7 +166,7 @@ int main(int argc, char *argv[])
         }
     if(par_count==1){printf("only one process\n");}
     
-    int fd[4];
+    int fd[5];
     if(par_id==0)
         {
             //TODO: init the shared memory for A,B,C, ready. shm_open with O_CREAT here! then ftruncate! then mmap
@@ -170,14 +174,17 @@ int main(int argc, char *argv[])
             fd[1] = shm_open("matrixB", O_RDWR | O_CREAT, 0777);
             fd[2] = shm_open("matrixC", O_RDWR | O_CREAT, 0777);
             fd[3] = shm_open("Ready", O_RDWR | O_CREAT, 0777);
+            fd[4] = shm_open ("Timer", O_RDWR | O_CREAT, 0777);
             ftruncate(fd[0], MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float));
             ftruncate(fd[1], MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float));
             ftruncate(fd[2], MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float));
             ftruncate(fd[3], sizeof(int) * par_count);
+            ftruncate(fd[4], sizeof(float));
             A = (float*)mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[0], 0);
             B = (float*)mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[1], 0);
             C = (float*)mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[2], 0);
             ready = (int*)mmap(NULL, sizeof(int) * par_count, PROT_READ | PROT_WRITE, MAP_SHARED, fd[3], 0);
+            time = (float*)mmap(NULL, sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[4], 0);
         }
     else
         {
@@ -187,10 +194,12 @@ int main(int argc, char *argv[])
             fd[1] = shm_open("matrixB", O_RDWR, 0777);
             fd[2] = shm_open("matrixC", O_RDWR, 0777);
             fd[3] = shm_open("Ready", O_RDWR, 0777);
+            fd[4] = shm_open ("Timer", O_RDWR | O_CREAT, 0777);
             A = (float*)mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[0], 0);
             B = (float*)mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[1], 0);
             C = (float*)mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[2], 0);
             ready = (int*)mmap(NULL, sizeof(int) * par_count, PROT_READ | PROT_WRITE, MAP_SHARED, fd[3], 0);
+            time = (float*)mmap(NULL, sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[4], 0);
         }
     synch(par_id,par_count,ready);
 
@@ -207,8 +216,13 @@ int main(int argc, char *argv[])
     synch(par_id,par_count,ready);
 
     quadratic_matrix_multiplication_parallel(par_id, par_count,A,B,C, ready);
+    end = clock();
+    *time += (end - start);
     synch(par_id,par_count,ready);
-
+    if (par_id == (par_count -1))
+    {
+        printf("Multiplication took %f seconds\n", (*time)/CLOCKS_PER_SEC);
+    }
     if(par_id==0)
         quadratic_matrix_print(C);
         

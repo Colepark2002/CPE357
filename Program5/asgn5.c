@@ -140,7 +140,7 @@ int main(int argc, char *argv[])
     float *A,*B,*C; //matrices A,B and C
     int *ready; //needed for synch
     float *time;
-    time_t start = clock();
+    time_t start;
     time_t end;
     if(argc!=3){printf("no shared\n");}
     else
@@ -179,6 +179,7 @@ int main(int argc, char *argv[])
             C = (float*)mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[2], 0);
             ready = (int*)mmap(NULL, sizeof(int) * par_count, PROT_READ | PROT_WRITE, MAP_SHARED, fd[3], 0);
             time = (float*)mmap(NULL, sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[4], 0);
+            *time = 0;
             for(int i = 0; i < par_count; i++)
             {
                 ready[i] = 0;
@@ -209,7 +210,7 @@ int main(int argc, char *argv[])
             }
         }
     synch(par_id,par_count,ready);
-
+    start = clock();
     quadratic_matrix_multiplication_parallel(par_id, par_count,A,B,C, ready);
     end = clock();
     *time += (end - start);
@@ -220,9 +221,9 @@ int main(int argc, char *argv[])
     }
     if (par_id == 0)
     {
-        quadratic_matrix_print(C);
         quadratic_matrix_print(A);
         quadratic_matrix_print(B);
+        quadratic_matrix_print(C);
     }    
     synch(par_id, par_count, ready);
 

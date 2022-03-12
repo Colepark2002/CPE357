@@ -214,7 +214,7 @@ int main(int argc, char *argv[])
 
     if(par_id==0)
         {
-            for(int i = 0; i < MATRIX_DIMENSION_XY; i++)
+            for(int i = 0; i < MATRIX_DIMENSION_XY*MATRIX_DIMENSION_XY; i++)
             {
                 int a = rand();
                 int b = rand();
@@ -225,10 +225,10 @@ int main(int argc, char *argv[])
     synch(par_id,par_count,ready);
 
     quadratic_matrix_multiplication_parallel(par_id, par_count,A,B,C, ready);
-    end = clock();
-    *time += (end - start);
+    end = clock(); //added
+    *time += (end - start); //added
     synch(par_id,par_count,ready);
-    if (par_id == (par_count -1))
+    if (par_id == (par_count -1)) //added
     {
         printf("Matrix Multiplication took %f seconds\n", (*time)/CLOCKS_PER_SEC);
     }

@@ -67,27 +67,12 @@ void quadratic_matrix_multiplication(float *A,float *B,float *C)
 void synch(int par_id,int par_count,int *ready)
 {
     //TODO: synch algorithm. make sure, ALL processes get stuck here until all ARE here
-    ready[par_id] = 1;
-    while(1)
+    int newVal = ++ready[par_id];
+    
+    for(int i = 0; i < par_count; i++)
     {
-        int i;
-        for(i = 0; i < par_count; i++)
-        {
-            if (ready[i] == 0)
-            {
-                break;
-            }
-        }
-        if(i == par_count)
-        {
-            break;
-        }
-        if(par_id == (par_count - 1))
-        {
-            break;
-        }
+        while(ready[i] < newVal);
     }
-    ready[par_id] = 0;
 }
 
 void quadratic_matrix_multiplication_parallel(int par_id, int par_count,float* A,float * B,float* C, int* ready)
@@ -121,7 +106,7 @@ void quadratic_matrix_multiplication_parallel(int par_id, int par_count,float* A
             rows += MATRIX_DIMENSION_XY % par_count;
             //multiply
             for(int a = 0; a<MATRIX_DIMENSION_XY; a++) // over all cols a
-                for(int b = 0; b<(par_id * rows) + rows + (MATRIX_DIMENSION_XY % par_count); b++) // over all rows b
+                for(int b = 0; b < MATRIX_DIMENSION_XY/par_count + (MATRIX_DIMENSION_XY % par_count); b++) // over all rows b
                     for(int c = 0;c<MATRIX_DIMENSION_XY;c++) // over all rows/cols left
                         {
                             C[a + b*MATRIX_DIMENSION_XY] += A[c + b*MATRIX_DIMENSION_XY] * B[a 
@@ -132,7 +117,7 @@ void quadratic_matrix_multiplication_parallel(int par_id, int par_count,float* A
         {
             //multiply
             for(int a = 0; a<MATRIX_DIMENSION_XY; a++) // over all cols a
-                for(int b = (par_id * rows) + (MATRIX_DIMENSION_XY % par_count); b<(par_id * rows) + rows + (MATRIX_DIMENSION_XY % par_count); b++) // over all rows b
+                for(int b = (par_id * rows) + (MATRIX_DIMENSION_XY % par_count); b<((par_id * rows) + rows + (MATRIX_DIMENSION_XY % par_count)); b++) // over all rows b
                     for(int c = 0;c<MATRIX_DIMENSION_XY;c++) // over all rows/cols left
                         {
                             C[a + b*MATRIX_DIMENSION_XY] += A[c + b*MATRIX_DIMENSION_XY] * B[a 
@@ -155,7 +140,7 @@ int main(int argc, char *argv[])
     float *A,*B,*C; //matrices A,B and C
     int *ready; //needed for synch
     float *time;
-    time_t start = clock();
+    time_t start;
     time_t end;
     if(argc!=3){printf("no shared\n");}
     else
@@ -194,6 +179,11 @@ int main(int argc, char *argv[])
             C = (float*)mmap(NULL, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[2], 0);
             ready = (int*)mmap(NULL, sizeof(int) * par_count, PROT_READ | PROT_WRITE, MAP_SHARED, fd[3], 0);
             time = (float*)mmap(NULL, sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[4], 0);
+            *time = 0;
+            for(int i = 0; i < par_count; i++)
+            {
+                ready[i] = 0;
+            }
         }
     else
         {
@@ -211,30 +201,30 @@ int main(int argc, char *argv[])
             time = (float*)mmap(NULL, sizeof(float), PROT_READ | PROT_WRITE, MAP_SHARED, fd[4], 0);
         }
     synch(par_id,par_count,ready);
-
-    if(par_id==0)
+    if(par_id == 0)
         {
-            for(int i = 0; i < MATRIX_DIMENSION_XY*MATRIX_DIMENSION_XY; i++)
+            for(int i = 0; i < (MATRIX_DIMENSION_XY*MATRIX_DIMENSION_XY); i++)
             {
-                int a = rand();
-                int b = rand();
-                A[i] = a;
-                B[i] = b;
+                A[i] = 1;
+                B[i] = 1;
             }
         }
     synch(par_id,par_count,ready);
-
+    start = clock();
     quadratic_matrix_multiplication_parallel(par_id, par_count,A,B,C, ready);
     end = clock(); //added
     *time += (end - start); //added
     synch(par_id,par_count,ready);
-    if (par_id == (par_count -1)) //added
+    if (par_id == (par_count - 1))
     {
         printf("Matrix Multiplication took %f seconds\n", (*time)/CLOCKS_PER_SEC);
     }
-    if(par_id==0)
+    if (par_id == 0)
+    {
+        quadratic_matrix_print(A);
+        quadratic_matrix_print(B);
         quadratic_matrix_print(C);
-        
+    }    
     synch(par_id, par_count, ready);
 
     //lets test the result:
@@ -249,13 +239,16 @@ int main(int argc, char *argv[])
     close(fd[1]);
     close(fd[2]);
     close(fd[3]);
+    close(fd[4]);
     shm_unlink("matrixA");
     shm_unlink("matrixB");
     shm_unlink("matrixC");
     shm_unlink("Ready"); // changed
+    shm_unlink("Timer"); // added
     munmap(A, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float)); // added
     munmap(B, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float)); // added
     munmap(C, MATRIX_DIMENSION_XY * MATRIX_DIMENSION_XY * sizeof(float)); // added
     munmap(ready, sizeof(int) * par_count); // added
+    munmap(time, sizeof(float)); //added
     return 0;    
 }

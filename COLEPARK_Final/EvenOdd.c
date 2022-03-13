@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
 {
     int size = INPUT;
     int index;
-    char b;
+    char car;
     int programs = atoi(argv[1]);
     int *swaps = (int*)mmap(NULL,sizeof(int), PROT_WRITE | PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
     int *Arr = (int*)mmap(NULL,sizeof(int) * size, PROT_WRITE | PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
@@ -31,9 +31,9 @@ int main(int argc, char* argv[])
         {
             Arr = (int*)mremap(Arr, size, size+=INPUT);
         }
-        scanf("%d%c", &Arr[index], &b);
+        scanf("%d%c", &Arr[index], &car);
         
-        if(b == '\n')
+        if(car == '\n')
         {
             break;
         }

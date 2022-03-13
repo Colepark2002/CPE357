@@ -68,5 +68,6 @@ int main(int argc, char* argv[])
             return;
         }
     }
+    wait(NULL);
     return 0;
 }

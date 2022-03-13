@@ -12,12 +12,12 @@
 int main(int argc, char* argv[])
 {
     int size = INPUT;
-    int i;
+    int index;
     char b;
     int programs = atoi(argv[1]);
     int *shared = (int*)mmap(NULL,sizeof(int), PROT_WRITE | PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
     int *Arr = (int*)mmap(NULL,sizeof(int) * size, PROT_WRITE | PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-    int *Even = (int*)mmap(NULL,sizeof(int) * size, PROT_WRITE | PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    int *Even = (int*)mmap(NULL,sizeof(int), PROT_WRITE | PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
     int id;
     int start;
     int end;
@@ -25,20 +25,20 @@ int main(int argc, char* argv[])
     
 
     printf("\nEnter Input Array: ");
-    for(i = 0;; i++)
+    for(index = 0;; index++)
     {
-        if(i == size) // resize array if more than current size
+        if(index == size) // resize array if more than current size
         {
-
+            Arr = (int*)mremap(Arr, size, size+=INPUT);
         }
-        scanf("%d%c", &Arr[i], &b);
+        scanf("%d%c", &Arr[index], &b);
         
         if(b == '\n')
         {
             break;
         }
     }
-    for(int w = 0; w <= i; w++)
+    for(int w = 0; w <= index; w++)
     {
         printf("%d ", Arr[w]);
     }
@@ -47,6 +47,19 @@ int main(int argc, char* argv[])
         if(fork()==0)
         {
             id = x;
+            if(id == 0)
+            {
+                start = 0;
+                responsible = ((index + 1)/programs) + ((index +1) % programs);
+                end = start + responsible;
+            }
+            else
+            {
+                responsible = ((index + 1)/programs);
+                start = (id * responsible) + ((index +1) % programs);
+                end = start + responsible;
+            }
+            
         }
     }
     return 0;

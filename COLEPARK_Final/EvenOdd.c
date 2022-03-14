@@ -1,12 +1,11 @@
-//#include <unistd.h>
-//#include <signal.h>
-#include <string.h>
+#define _GNU_SOURCE
+#include <unistd.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
-//#include <sys/mman.h>
-//#include <sys/wait.h>
-//#include <sys/types.h>
-//#include <time.h>
+#include <sys/mman.h>
+#include <sys/wait.h>
+#include <sys/types.h>
 #define INPUT 100
 
 int main(int argc, char* argv[])
@@ -29,7 +28,8 @@ int main(int argc, char* argv[])
     {
         if(index == size) // resize array if more than current size
         {
-            Arr = (int*)mremap(Arr, size, size+=INPUT);
+            size += INPUT;
+            Arr = (int*)mremap(Arr, index, size, 0);
         }
         scanf("%d%c", &Arr[index], &car);
         
@@ -38,10 +38,12 @@ int main(int argc, char* argv[])
             break;
         }
     }
-    for(int w = 0; w <= index; w++)
+    index++;
+    for(int w = 0; w < index; w++)
     {
         printf("%d ", Arr[w]);
     }
+    return 0;
     for(int x = 0; x < programs; x++)
     {
         if(fork()==0)
@@ -50,13 +52,13 @@ int main(int argc, char* argv[])
             if(id == 0)
             {
                 start = 0;
-                responsible = ((index + 1)/programs) + ((index +1) % programs);
+                responsible = ((index/programs) + ((index) % programs));
                 end = start + responsible;
             }
             else
             {
-                responsible = ((index + 1)/programs);
-                start = (id * responsible) + ((index +1) % programs);
+                responsible = ((index)/programs);
+                start = (id * responsible) + ((index) % programs);
                 end = start + responsible;
             }
             

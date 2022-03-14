@@ -1,13 +1,13 @@
-//#include <unistd.h>
-//#include <signal.h>
+#include <unistd.h>
+#include <signal.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-//#include <sys/mman.h>
-//#include <sys/wait.h>
-//#include <sys/types.h>
-//#include <sys/time.h>
-float secs
+#include <sys/mman.h>
+#include <sys/wait.h>
+#include <sys/types.h>
+#include <sys/time.h>
+float secs;
 
 void printHelper()
 {
@@ -25,7 +25,7 @@ void printHelper()
     }
 }
 
-void alarm(int sig)
+void handler(int sig)
 {
     secs -= .5;
     printHelper();
@@ -35,21 +35,20 @@ void alarm(int sig)
 int main(int argc, char* argv[])
 {
     secs = atof(argv[1]);
-    printf("%f\n", secs);
     struct itimerval timer;
     timer.it_value.tv_sec = timer.it_interval.tv_sec = 0;
     timer.it_value.tv_usec = timer.it_interval.tv_usec = 500000;
-    signal(SIGALRM, &alarm);
+    signal(SIGALRM, &handler);
     printHelper();
-    setitimer(ITIMER_REAL, timer, NULL);
+    setitimer(ITIMER_REAL, &timer, NULL);
     while(secs != 0);
 
-    if(argc > 3)
+    if(argc == 3)
     {
         if(fork() == 0)
         {
-            execv(argv[2], NULL);
-            return;
+            execv(argv[2], (char*[]){argv[2], NULL});
+            return 0;
         }
     }
     else
@@ -65,7 +64,7 @@ int main(int argc, char* argv[])
             }
             arguments[index] = NULL;
             execv(argv[2], arguments);
-            return;
+            return 0;
         }
     }
     wait(NULL);

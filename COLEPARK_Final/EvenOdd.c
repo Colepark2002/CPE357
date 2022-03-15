@@ -28,14 +28,11 @@ int main(int argc, char* argv[])
     int mapsize = INPUT; // size of the mapped array
     int ArrSize; // array size
     char car; //used to find \n
-    int programs = atoi(argv[1]); // program count
-    if (programs > (ArrSize/2)) // if you have too many programs reset
-    {
-        programs = ArrSize/2;
-    }
+    int initprograms = atoi(argv[1]); // program count
+    int programs = initprograms;
     int *swaps = (int*)mmap(NULL,sizeof(int), PROT_WRITE | PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1, 0); // Counts amount of swaps
     int *Arr = (int*)mmap(NULL,sizeof(int) * mapsize, PROT_WRITE | PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1, 0); // Shared Array
-    int *ready = (int*)mmap(NULL, sizeof(int) * programs, PROT_WRITE | PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1,0); //used for synch
+    int *ready = (int*)mmap(NULL, sizeof(int) * initprograms, PROT_WRITE | PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1,0); //used for synch
     memset(ready, 0, sizeof(int) * programs);
     int id; // process id
     int start; // start index
@@ -60,7 +57,10 @@ int main(int argc, char* argv[])
     }
     printf("\n");
     ArrSize++;
-    
+    if (programs > (ArrSize/2)) // if you have too many programs reset
+    {
+        programs = ArrSize/2;
+    }
     printf("Initial Array: ");
     for(int w = 0; w < ArrSize; w++) // prints array
     {

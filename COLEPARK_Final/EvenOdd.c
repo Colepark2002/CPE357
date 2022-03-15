@@ -92,12 +92,12 @@ int main(int argc, char* argv[])
     time_t starter = clock();
     if (pid == 0)
     {
-        while(*swaps != 0)
+        while(*swaps != 0) // sorting algorithm
         {
             synch(id, programs, ready);
             if(id == 0)
                 *swaps = 0;
-            for(int i = start; i < start + responsible && i < ArrSize - 1; i+=2)
+            for(int i = start; i < start + responsible && i < ArrSize - 1; i+=2) // Even Sort
             {
                 if(Arr[i] > Arr[i+1])
                 {
@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
                 }
             }
             synch(id, programs, ready);
-            for(int i = start + 1; i < start + responsible && i < ArrSize - 1; i+=2)
+            for(int i = start + 1; i < start + responsible && i < ArrSize - 1; i+=2) // Odd Sort
             {
                 if(Arr[i] > Arr[i+1])
                 {

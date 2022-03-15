@@ -13,16 +13,9 @@ void printHelper()
 {
     for(int i = 0; i < (secs * 2); i++)
     {
-        printf(". ");
+        fprintf(stderr,". ");
     }
-    if(secs)
-    {
-        printf("// %f seconds until START\n", secs);
-    }
-    else
-    {
-        printf("// Start of other program\n");
-    }
+    fprintf(stderr, "\n");
 }
 
 void handler(int sig)

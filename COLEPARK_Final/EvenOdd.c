@@ -31,7 +31,6 @@ int main(int argc, char* argv[])
     int programs = atoi(argv[1]); // program count
     int *swaps = (int*)mmap(NULL,sizeof(int), PROT_WRITE | PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1, 0); // Counts amount of swaps
     int *Arr = (int*)mmap(NULL,sizeof(int) * mapsize, PROT_WRITE | PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1, 0); // Shared Array
-    int *Even = (int*)mmap(NULL,sizeof(int), PROT_WRITE | PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1, 0); // Might not use
     int *ready = (int*)mmap(NULL, sizeof(int) * programs, PROT_WRITE | PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1,0); //used for synch
     memset(ready, 0, sizeof(int) * programs);
     int id; // process id
@@ -39,7 +38,7 @@ int main(int argc, char* argv[])
     int end; // end index
     int responsible; // how many integers responsible for in array
     
-
+    
     printf("\nEnter Input Array: ");
     for(ArrSize = 0;; ArrSize++) // infinitely reads from input until hitting a \n
     {
@@ -55,6 +54,7 @@ int main(int argc, char* argv[])
             break;
         }
     }
+    printf("\n");
     ArrSize++;
     if (programs > (ArrSize/2)) // if you have too many programs reset
     {

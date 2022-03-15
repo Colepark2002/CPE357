@@ -134,7 +134,7 @@ int main(int argc, char* argv[])
         }
         printf("\n\nProcesses: %d\nTime to Sort: %f secs\n", programs, time/CLOCKS_PER_SEC);
         munmap(swaps, sizeof(int));
-        munmap(ready, sizeof(int)*programs);
+        munmap(ready, sizeof(int)*initprograms);
         munmap(Arr,sizeof(int)*mapsize);
     }
     

@@ -29,6 +29,10 @@ int main(int argc, char* argv[])
     int ArrSize; // array size
     char car; //used to find \n
     int programs = atoi(argv[1]); // program count
+    if (programs > (ArrSize/2)) // if you have too many programs reset
+    {
+        programs = ArrSize/2;
+    }
     int *swaps = (int*)mmap(NULL,sizeof(int), PROT_WRITE | PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1, 0); // Counts amount of swaps
     int *Arr = (int*)mmap(NULL,sizeof(int) * mapsize, PROT_WRITE | PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1, 0); // Shared Array
     int *ready = (int*)mmap(NULL, sizeof(int) * programs, PROT_WRITE | PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1,0); //used for synch
@@ -56,10 +60,7 @@ int main(int argc, char* argv[])
     }
     printf("\n");
     ArrSize++;
-    if (programs > (ArrSize/2)) // if you have too many programs reset
-    {
-        programs = ArrSize/2;
-    }
+    
     printf("Initial Array: ");
     for(int w = 0; w < ArrSize; w++) // prints array
     {
@@ -132,6 +133,9 @@ int main(int argc, char* argv[])
             printf("%d ", Arr[w]);
         }
         printf("\n\nProcesses: %d\nTime to Sort: %f secs\n", programs, time/CLOCKS_PER_SEC);
+        munmap(swaps, sizeof(int));
+        munmap(ready, sizeof(int)*programs);
+        munmap(Arr,sizeof(int)*mapsize);
     }
     
 
